@@ -11,26 +11,28 @@ class Paragraph:
         self.content = self.rstrip_whitespace(content)
         self.type = None
 
-    def wrap(self, width=DEFAULT_WIDTH):
-        """Change self.content by putting \\n at width distance."""
-        raw_content = self.content.replace('\n', ' ')
-        wrapped_lines = textwrap.wrap(raw_content, width)
-        wrapped_lines = [line + '\n' for line in wrapped_lines]
-        self.content = reduce(add, wrapped_lines)
-        return None
-
-    @staticmethod
-    def rstrip_whitespace(content):
-        """Remove a single/multiple whitespace character/s from the end
-        of every self.content line.
-        """
-        while ' \n' in content or '\t\n' in content:
-            content = content.replace(' \n', '\n')
-            content = content.replace('\t\n', '\n')
-        return content
-
     def __str__(self):
         return f'{self.content}'
 
     def __repr__(self):
         return f'Paragraph({self.content!r})'
+
+    def wrap(self, width=DEFAULT_WIDTH, **kwargs):
+        """Wrap the string in self.contents and modify it in place.
+
+        See textwrap.TextWrapper class for keyword args to customize
+        the wrapping behaviour."""
+        raw = self.content.replace('\n', ' ')
+        wrapped_lines = textwrap.wrap(raw, width, **kwargs)
+        wrapped_lines = [line + '\n' for line in wrapped_lines]
+
+        self.content = reduce(add, wrapped_lines)
+
+    @staticmethod
+    def rstrip_whitespace(lines):
+        """Remove whitespace from the end of a line in a multi-line string."""
+        stripped_lines = [
+            line.rstrip() + '\n' for line in lines.splitlines()
+        ]
+
+        return reduce(add, stripped_lines)
