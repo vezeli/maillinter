@@ -6,8 +6,10 @@ def read_email(email_path):
         text = f.read()
     paragraphs = text.split('\n\n')
     paragraphs = [
-        textcontent.Paragraph(i, content, 'simple') for i, content in
-                                                    enumerate(paragraphs)
+        textcontent.Paragraph(
+            i, text, textcontent.hashardreturn(text)
+        )
+        for i, text in enumerate(paragraphs)
     ]
 
     return textcontent.TextContent(paragraphs)
