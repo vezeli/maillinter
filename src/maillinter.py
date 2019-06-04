@@ -1,4 +1,4 @@
-import textcontent
+import structure
 
 
 def read_email(email_path):
