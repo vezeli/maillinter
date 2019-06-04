@@ -7,35 +7,65 @@ DEFAULT_WIDTH = 56
 HARD_RETURN = '\\\\'
 
 
+def hashardreturn(text):
+    if HARD_RETURN in text:
+        return True
+    return False
+
+
+def repr2text(repr_text):
+    text = repr_text.replace('\n', ' ')
+    text = text.rstrip()
+    return text
+
+
 class Paragraph:
     count = 0
 
     def __init__(self, repr_text):
         self.repr_text = repr_text
 
-        if self.hashardreturn(repr_text) is True:
-            parts = repr_text.split(HARD_RETURN)
-            self.subparagraphs = [part.strip() for part in parts]
+        if hashardreturn(self.repr_text) is True:
+            parts = self.repr_text.split(HARD_RETURN)
+            # TODO: Account for \t appearance. This "if" branch will
+            #       strip \t and the "else" branch will not strip \t.
+            self.subparagraphs = [
+                SubParagraph(part.strip()) for part in parts
+            ]
         else:
-            self.subparagraphs = [repr_text]
+            self.subparagraphs = [SubParagraph(self.repr_text)]
 
         self.__class__.count += 1
 
     def __repr__(self):
         return f'Paragraph({self.repr_text!r})'
 
-    def wrap(self, width=DEFAULT_WIDTH, **kwargs):
-        wrapped_subparagraphs = (
-            textwrap.wrap(text, width, **kwargs) for text in self.subparagraphs
-        )
-        self.wrapped_subparagraphs = [lines for lines in wrapped_subparagraphs]
-        return None
+    def wrap(self, **kwargs):
+        for subparagraph in self.subparagraphs:
+            subparagraph.wrap(self, **kwargs)
 
-    @staticmethod
-    def hashardreturn(text):
-        if HARD_RETURN in text:
-            return True
-        return False
+
+class SubParagraph:
+    count = 0
+
+    def __init__(self, repr_text):
+        self.repr_text = repr_text
+        self.text = repr2text(repr_text)
+        self.__class__.count += 1
+
+    def __str__(self):
+        return self.text
+
+    def __repr__(self):
+        return f'SubParagraph({self.repr_text!r})'
+
+    def wrap(self, width=DEFAULT_WIDTH, **kwargs):
+        wrapped_lines = textwrap.wrap(self.text, width, **kwargs)
+        self.text = reduce(
+            add, (line if line is wrapped_lines[-1] else line + '\n'
+            for line in wrapped_lines)
+        )
+        return None
 
 
 class TextContent:
@@ -49,9 +79,3 @@ class TextContent:
             f'TextContent({self.paragraphs!r}, '
             f'add_signature={self.add_signature!r})'
         )
-
-    def wrap(self, width=DEFAULT_WIDTH, **kwargs)-> None:
-        _ = [
-            paragraph.wrap(width, **kwargs) for paragraph in self.paragraphs
-        ]
-        return None
