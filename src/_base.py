@@ -5,7 +5,6 @@ from functools import reduce
 from operator import add
 
 
-
 def clean_text(repr_text):
     """Remove ALL multiple whitespace, \\t and \\n from repr_text."""
     return ' '.join(repr_text.split())
@@ -27,7 +26,15 @@ class Paragraph:
     def __init__(self, repr_text):
         self.repr_text = repr_text
         self.subparagraphs = split_into_subparagraphs(repr_text)
+        self.formality = self.is_formality()
         self.increment_count()
+
+    def is_formality(self):
+        if any(subparagraph.text.istitle() for subparagraph in
+                self.subparagraphs):
+            return True
+        else:
+            return False
 
     def __str__(self):
         return '\n'.join(spar.text for spar in self.subparagraphs)
@@ -44,12 +51,11 @@ class Paragraph:
         cls.count += 1
 
 
-class TextContainer(Paragraph):
+class TextContainer:
 
     def __init__(self, repr_text):
         self.repr_text = repr_text
         self.text = clean_text(repr_text)
-        self.increment_count()
 
     def __str__(self):
         return self.text
@@ -62,7 +68,7 @@ class TextContainer(Paragraph):
         self.text = '\n'.join(line for line in wrapped_lines)
 
 
-class Email(collections.UserList):
+class Email:
 
     def __init__(self, paragraphs, add_signature=False):
         self._paragraphs = paragraphs
@@ -79,5 +85,9 @@ class Email(collections.UserList):
 
     def wrap(self, width=56, **kwargs):
         for paragraph in self:
+            used_kwargs = kwargs.copy()
+            if paragraph.formality and kwargs.get('initial_indent') is not None:
+                used_kwargs.update({'initial_indent': ''})
+
             for subparagraph in paragraph.subparagraphs:
-                subparagraph._wrap(width, **kwargs)
+                subparagraph._wrap(width, **used_kwargs)
