@@ -5,16 +5,19 @@ from functools import reduce
 from operator import add
 
 
-HARD_RETURN = '\\hardreturn'
 
 def clean_text(repr_text):
-    """Remove multiple or single whitespace except for the leading ones."""
+    """Remove ALL multiple whitespace, \\t and \\n from repr_text."""
     return ' '.join(repr_text.split())
 
 
 def split_into_subparagraphs(repr_text):
-    parts = repr_text.split(HARD_RETURN)
-    subparagraphs = [_SubParagraph(part) for part in parts]
+    """Split Paragraph repr_text into TextContainers.
+
+    Either \\\\ or \\newline will split the Paragraph into TextContainers."""
+    repr_text = repr_text.replace('\\\\', '\\newline')
+    parts = repr_text.split('\\newline')
+    subparagraphs = [TextContainer(part) for part in parts]
     return subparagraphs
 
 
@@ -23,14 +26,14 @@ class Paragraph:
 
     def __init__(self, repr_text):
         self.repr_text = repr_text
-        self._subparagraphs = split_into_subparagraphs(repr_text)
+        self.subparagraphs = split_into_subparagraphs(repr_text)
         self.increment_count()
 
     def __str__(self):
-        return '\n'.join(spar.text for spar in self._subparagraphs)
+        return '\n'.join(spar.text for spar in self.subparagraphs)
 
     def __repr__(self):
-        return f'Paragraph({self.repr_text!r})'
+        return f'{type(self).__name__}({self.repr_text!r})'
 
     @classmethod
     def get_count(cls):
@@ -41,7 +44,7 @@ class Paragraph:
         cls.count += 1
 
 
-class _SubParagraph(Paragraph):
+class TextContainer(Paragraph):
 
     def __init__(self, repr_text):
         self.repr_text = repr_text
@@ -52,7 +55,7 @@ class _SubParagraph(Paragraph):
         return self.text
 
     def __repr__(self):
-        return f'SubParagraph({self.repr_text!r})'
+        return f'{type(self).__name__}({self.repr_text!r})'
 
     def _wrap(self, width, **kwargs):
         wrapped_lines = textwrap.wrap(self.text, width, **kwargs)
@@ -70,11 +73,11 @@ class Email(collections.UserList):
 
     def __repr__(self):
         return (
-            f'Email({self._paragraphs!r}, '
+            f'{type(self).__name__}({self._paragraphs!r}, '
             f'add_signature={self.add_signature!r})'
         )
 
     def wrap(self, width=56, **kwargs):
         for paragraph in self:
-            for subparagraph in paragraph._subparagraphs:
+            for subparagraph in paragraph.subparagraphs:
                 subparagraph._wrap(width, **kwargs)
