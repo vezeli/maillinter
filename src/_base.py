@@ -5,17 +5,20 @@ from functools import reduce
 from operator import add
 
 
+NEW_LINE = '\\newline'
+
 def clean_text(repr_text):
-    """Remove ALL multiple whitespace, \\t and \\n from repr_text."""
+    """Remove \\t, \\n and multiple whitespaces from repr_text."""
     return ' '.join(repr_text.split())
 
 
 def split_into_subparagraphs(repr_text):
     """Split Paragraph repr_text into TextContainers.
 
-    Either \\\\ or \\newline will split the Paragraph into TextContainers."""
-    repr_text = repr_text.replace('\\\\', '\\newline')
-    parts = repr_text.split('\\newline')
+    Either \\\\ or \\newline will split the Paragraph into TextContainers.
+    """
+    repr_text = repr_text.replace('\\\\', NEW_LINE)
+    parts = repr_text.split(NEW_LINE)
     subparagraphs = [TextContainer(part) for part in parts]
     return subparagraphs
 
@@ -26,15 +29,13 @@ class Paragraph:
     def __init__(self, repr_text):
         self.repr_text = repr_text
         self.subparagraphs = split_into_subparagraphs(repr_text)
-        self.formality = self.is_formality()
+        self.salute_or_end = self.is_salute_or_end()
         self.increment_count()
 
-    def is_formality(self):
-        if any(subparagraph.text.istitle() for subparagraph in
-                self.subparagraphs):
-            return True
-        else:
-            return False
+    def is_salute_or_end(self):
+        return any(
+            subparagraph.text.istitle() for subparagraph in self.subparagraphs
+        )
 
     def __str__(self):
         return '\n'.join(spar.text for spar in self.subparagraphs)
@@ -86,8 +87,10 @@ class Email:
     def wrap(self, width=56, **kwargs):
         for paragraph in self:
             used_kwargs = kwargs.copy()
-            if paragraph.formality and kwargs.get('initial_indent') is not None:
-                used_kwargs.update({'initial_indent': ''})
+
+            if (paragraph.salute_or_end and
+                    kwargs.get('initial_indent') is not None):
+                modified_kwargs.update({'initial_indent': ''})
 
             for subparagraph in paragraph.subparagraphs:
                 subparagraph._wrap(width, **used_kwargs)
