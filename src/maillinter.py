@@ -16,24 +16,24 @@ def main():
 
     if args.output:
         write(args.output, mail)
-    else:
-        for paragraph in mail:
-            print('')
-            for subparagraph in paragraph.subparagraphs:
-                print(subparagraph)
+
+    for paragraph in mail:
+        for subparagraph in paragraph.subparagraphs:
+            print(subparagraph)
+        print('')
 
 
-def write(out_file, email_obj):
-    with open(out_file, 'w') as f:
+def write(output_file, email_obj):
+    with open(output_file, 'w') as f:
         for paragraph in email_obj:
-            f.write('\n')
             for subparagraph in paragraph.subparagraphs:
                 f.write(subparagraph.text)
                 f.write('\n')
+            f.write('\n')
 
 
 description_msg = 'Lint the whitespace and wrap the content of an email.'
-parser = argparse.ArgumentParser(description=description_msg)
+parser = argparse.ArgumentParser(prog=__file__, description=description_msg)
 parser.add_argument('input', type=str, help='input file')
 parser.add_argument('-o', dest='output', type=str, help='output file')
 parser.add_argument(
