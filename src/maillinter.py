@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import argparse
+import os
 
 import _base
 from _version import __version__
@@ -33,10 +34,11 @@ def write(output_file, email_obj):
             f.write('\n')
 
 
-description_msg = 'Lint the whitespace and wrap the content of an email.'
-parser = argparse.ArgumentParser(prog=__file__, description=description_msg)
+description_msg = 'Lint whitespace and wrap the content of an email.'
+parser = argparse.ArgumentParser(prog='./' + os.path.basename(__file__),
+                                 description=description_msg)
 parser.add_argument('input', type=str, help='input file')
-parser.add_argument('-o', dest='output', type=str, help='set the output file')
+parser.add_argument('-o', dest='output', type=str, help='set output file')
 parser.add_argument('-v',
                     '--version',
                     action='version',
@@ -45,7 +47,7 @@ parser.add_argument('-w',
                     dest='wrap',
                     type=int,
                     default=56,
-                    help='set the length of wrapped lines')
+                    help='set length of wrapped lines')
 args = parser.parse_args()
 
 if __name__ == '__main__':
