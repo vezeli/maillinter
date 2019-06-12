@@ -3,6 +3,7 @@
 import argparse
 
 import _base
+from _version import __version__
 
 
 def main():
@@ -35,12 +36,17 @@ def write(output_file, email_obj):
 description_msg = 'Lint the whitespace and wrap the content of an email.'
 parser = argparse.ArgumentParser(prog=__file__, description=description_msg)
 parser.add_argument('input', type=str, help='input file')
-parser.add_argument('-o', dest='output', type=str, help='output file')
-parser.add_argument(
-    '-w', dest='wrap', type=int, default=56, help='wrapped line lenght'
-)
+parser.add_argument('-o', dest='output', type=str, help='set the output file')
+parser.add_argument('-v',
+                    '--version',
+                    action='version',
+                    version='%(prog)s {version}'.format(version=__version__))
+parser.add_argument('-w',
+                    dest='wrap',
+                    type=int,
+                    default=56,
+                    help='set the length of wrapped lines')
 args = parser.parse_args()
-
 
 if __name__ == '__main__':
     main()
