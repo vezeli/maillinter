@@ -14,7 +14,7 @@ def main():
     paragraphs = [_base.Paragraph(text) for text in paragraphs]
 
     mail = _base.Email(paragraphs)
-    mail.wrap(width=args.wrap, initial_indent=args.indent)
+    mail.wrap(width=args.width, initial_indent=args.indent)
 
     if args.output:
         write(args.output, mail)
@@ -34,7 +34,7 @@ def write(output_file, email_obj):
             f.write('\n')
 
 
-description_msg = 'Lint whitespace and wrap the content of an email.'
+description_msg = 'Lint and restructure e-mail text.'
 parser = argparse.ArgumentParser(prog='./' + os.path.basename(__file__),
                                  description=description_msg)
 parser.add_argument('input', type=str, help='input file')
@@ -46,16 +46,16 @@ parser.add_argument('-i',
                     dest='indent',
                     type=str,
                     default='',
-                    help='specify indent string for every paragraph')
+                    help='add indent string to every paragraph')
 parser.add_argument('-v',
                     '--version',
                     action='version',
                     version='%(prog)s {version}'.format(version=__version__))
 parser.add_argument('-w',
-                    dest='wrap',
+                    dest='width',
                     type=int,
                     default=56,
-                    help='set line length (default=%(default)s)')
+                    help='set text width (default=%(default)s)')
 args = parser.parse_args()
 
 if __name__ == '__main__':

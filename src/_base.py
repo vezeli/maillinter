@@ -82,7 +82,7 @@ class Email:
             f'add_signature={self.add_signature!r})'
         )
 
-    def wrap(self, width=56, **kwargs):
+    def wrap(self, width, **kwargs):
         for paragraph in self:
             used_kwargs = kwargs.copy()
 
