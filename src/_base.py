@@ -7,16 +7,14 @@ from operator import add
 
 NEW_LINE = '\\newline'
 
+
 def clean_text(repr_text):
     """Remove \\t, \\n and multiple whitespaces from repr_text."""
     return ' '.join(repr_text.split())
 
 
 def split_into_subparagraphs(repr_text):
-    """Split Paragraph repr_text into TextContainers.
-
-    Either \\\\ or \\newline will split the Paragraph into TextContainers.
-    """
+    """Split Paragraph repr_text into TextContainers."""
     repr_text = repr_text.replace('\\\\', NEW_LINE)
     parts = repr_text.split(NEW_LINE)
     subparagraphs = [TextContainer(part) for part in parts]
@@ -88,9 +86,8 @@ class Email:
         for paragraph in self:
             used_kwargs = kwargs.copy()
 
-            if (paragraph.salute_or_end and
-                    kwargs.get('initial_indent') is not None):
-                modified_kwargs.update({'initial_indent': ''})
+            if paragraph.salute_or_end:
+                used_kwargs.update({'initial_indent': ''})
 
             for subparagraph in paragraph.subparagraphs:
                 subparagraph._wrap(width, **used_kwargs)
