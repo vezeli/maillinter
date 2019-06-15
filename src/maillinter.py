@@ -8,7 +8,7 @@ from _version import __version__
 
 
 def main():
-    with open(args.input, 'r') as f:
+    with open(args.input_file, 'r') as f:
         text = f.read()
     paragraphs = text.split('\n\n')
     paragraphs = [_base.Paragraph(text) for text in paragraphs]
@@ -37,25 +37,29 @@ def write(output_file, email_obj):
 description_msg = 'Lint and restructure e-mail text.'
 parser = argparse.ArgumentParser(prog='./' + os.path.basename(__file__),
                                  description=description_msg)
-parser.add_argument('input', type=str, help='input file')
-parser.add_argument('-o',
-                    dest='output',
-                    type=str,
-                    help='write program output to file')
-parser.add_argument('-i',
-                    dest='indent',
-                    type=str,
-                    default='',
-                    help='add indent string to every paragraph')
+parser.add_argument('input_file', type=str)
 parser.add_argument('-v',
                     '--version',
                     action='version',
                     version='%(prog)s {version}'.format(version=__version__))
 parser.add_argument('-w',
                     dest='width',
+                    metavar='width',
                     type=int,
                     default=56,
-                    help='set text width (default=%(default)s)')
+                    help='set line width (default=%(default)s)')
+parser.add_argument('--indent',
+                    dest='indent',
+                    metavar='\'pattern\'',
+                    type=str,
+                    default='',
+                    help='indent paragraphs with the pattern')
+parser.add_argument('-s',
+                    '--save',
+                    dest='output',
+                    metavar='FILE',
+                    type=str,
+                    help='save output to file')
 args = parser.parse_args()
 
 if __name__ == '__main__':
