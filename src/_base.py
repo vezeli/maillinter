@@ -77,6 +77,9 @@ class Email:
     def __getitem__(self, value):
         return self._paragraphs[value]
 
+    def __len__(self):
+        return len(self._paragraphs)
+
     def __repr__(self):
         return (
             f'{type(self).__name__}({self._paragraphs!r}, '
@@ -85,7 +88,7 @@ class Email:
 
     def wrap(self, width, **kwargs):
         for paragraph in self:
-            used_kwargs = kwargs.copy()
+            used_kwargs = dict(kwargs)
 
             if paragraph.salute_or_end:
                 used_kwargs.update({'initial_indent': ''})
