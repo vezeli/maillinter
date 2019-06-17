@@ -16,22 +16,12 @@ def main():
     mail = _base.Email(paragraphs)
     mail.wrap(width=args.width, initial_indent=args.indent)
 
+    clipboard_string = str(mail)
+    print(clipboard_string)
+
     if args.output:
-        write(args.output, mail)
-
-    for paragraph in mail:
-        for subparagraph in paragraph.subparagraphs:
-            print(subparagraph)
-        print('')
-
-
-def write(output_file, email_obj):
-    with open(output_file, 'w') as f:
-        for paragraph in email_obj:
-            for subparagraph in paragraph.subparagraphs:
-                f.write(subparagraph.text)
-                f.write('\n')
-            f.write('\n')
+        with open(args.output, 'w') as f:
+            f.write(clipboard_string)
 
 
 description_msg = 'Lint and restructure e-mail text.'

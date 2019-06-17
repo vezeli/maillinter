@@ -30,17 +30,19 @@ class Paragraph:
         self.salute_or_end = self.is_salute_or_end()
         self.increment_count()
 
+    def __repr__(self):
+        return f'{type(self).__name__}({self.text!r})'
+
+    def __str__(self):
+        return '\n'.join(
+            subparagraph.text for subparagraph in self.subparagraphs
+        )
+
     def is_salute_or_end(self):
         """Check if the 'Paragraph' is either a salute or an end paragraph."""
         return any(
             subparagraph.text.istitle() for subparagraph in self.subparagraphs
         )
-
-    def __str__(self):
-        return '\n'.join(spar.text for spar in self.subparagraphs)
-
-    def __repr__(self):
-        return f'{type(self).__name__}({self.text!r})'
 
     @classmethod
     def get_count(cls):
@@ -57,11 +59,11 @@ class TextContainer:
         self.raw_text = text
         self.text = lint_text(text)
 
-    def __str__(self):
-        return self.text
-
     def __repr__(self):
         return f'{type(self).__name__}({self.raw_text!r})'
+
+    def __str__(self):
+        return self.text
 
     def _wrap(self, width, **kwargs):
         wrapped_lines = textwrap.wrap(self.text, width, **kwargs)
@@ -85,6 +87,15 @@ class Email:
             f'{type(self).__name__}({self._paragraphs!r}, '
             f'add_signature={self.add_signature!r})'
         )
+
+    def __str__(self):
+        string = str()
+        for paragraph in self._paragraphs:
+            if paragraph is self._paragraphs[-1]:
+                string += str(paragraph)
+            else:
+                string += str(paragraph) + '\n\n'
+        return string
 
     def wrap(self, width, **kwargs):
         for paragraph in self:
