@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import collections
 import textwrap
-from functools import reduce
-from operator import add
 
 
 NEW_LINE = r'\newline'

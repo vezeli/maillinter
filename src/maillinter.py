@@ -3,6 +3,7 @@
 import argparse
 import os
 
+import pyperclip
 import _base
 from _version import __version__
 
@@ -17,11 +18,12 @@ def main():
     mail.wrap(width=args.width, initial_indent=args.indent)
 
     clipboard_string = str(mail)
-    print(clipboard_string)
+    pyperclip.copy(clipboard_string)
 
     if args.output:
         with open(args.output, 'w') as f:
             f.write(clipboard_string)
+    print(clipboard_string)
 
 
 description_msg = 'Lint and restructure e-mail text.'
