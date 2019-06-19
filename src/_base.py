@@ -12,7 +12,7 @@ def lint_text(text):
 
 
 def split_text(text):
-    """Return 'text' as a list of strings split at '\\\\' and '\\newline'."""
+    r"""Return 'text' as a list of strings split at '\\' and '\newline'."""
     text = text.replace(r'\\', NEW_LINE)
     parts = text.split(NEW_LINE)
     subparagraphs = [TextContainer(part) for part in parts]
@@ -70,9 +70,8 @@ class TextContainer:
 
 class Email:
 
-    def __init__(self, paragraphs, add_signature=False):
+    def __init__(self, paragraphs):
         self._paragraphs = paragraphs
-        self.add_signature = add_signature
 
     def __getitem__(self, value):
         return self._paragraphs[value]
