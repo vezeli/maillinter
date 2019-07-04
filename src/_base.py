@@ -80,10 +80,7 @@ class Email:
         return len(self._paragraphs)
 
     def __repr__(self):
-        return (
-            f'{type(self).__name__}({self._paragraphs!r}, '
-            f'add_signature={self.add_signature!r})'
-        )
+        return f'{type(self).__name__}({self._paragraphs!r})'
 
     def __str__(self):
         string = str()
