@@ -1,4 +1,6 @@
 /TODO
+/venv
 **/__pycache__
 **/*.swp
 **/tags
+**/src/mail_*

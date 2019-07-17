@@ -3,18 +3,18 @@
 import argparse
 import os
 
-import pyperclip
-import _base
 from _version import __version__
+import base
+import pyperclip
 
 
 def main():
     with open(args.input_file, 'r') as f:
         text = f.read()
     paragraphs = text.split('\n\n')
-    paragraphs = [_base.Paragraph(text) for text in paragraphs]
+    paragraphs = [base.Paragraph(text) for text in paragraphs]
 
-    mail = _base.Email(paragraphs)
+    mail = base.Email(paragraphs)
     mail.wrap(width=args.width, initial_indent=args.indent)
 
     clipboard_string = str(mail)
