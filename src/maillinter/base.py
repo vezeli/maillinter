@@ -2,9 +2,7 @@
 import collections
 import textwrap
 
-
 NEW_LINE = r'\newline'
-
 
 def lint_text(text):
     """Remove consecutive whitespace characters from 'text'."""
