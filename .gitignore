@@ -4,4 +4,4 @@ venv/
 **/__pycache__
 **/*.swp
 **/tags
-**/src/mail_*
+**/src/mail_dir

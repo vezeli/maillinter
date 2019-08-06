@@ -18,7 +18,7 @@ base_dir = os.path.dirname(__file__)
 src_dir = os.path.join(base_dir, 'src')
 
 about = {}
-with open(os.path.join(src_dir, '__about__.py')) as f:
+with open(os.path.join(src_dir, 'maillinter', '__about__.py')) as f:
     exec(f.read(), about)
 
 with open(os.path.join(base_dir, "README.md")) as f:
@@ -37,7 +37,7 @@ setuptools.setup(
     package_dir={'': 'src'},
     packaged=setuptools.find_packages(where='src'),
     setup_requires=['setuptools_scm'],
-    install_requires=['pyperclip', 'pip-tools'],
+    install_requires=['setuptools_scm', 'pyperclip', 'pip-tools'],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

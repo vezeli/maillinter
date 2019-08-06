@@ -3,10 +3,11 @@
 import argparse
 import os
 
-from _version import __version__
 import base
 import pyperclip
+from setuptools_scm import get_version
 
+__version__ = get_version(root="../..", relative_to=__file__)
 
 def main():
     with open(args.input_file, 'r') as f:
@@ -24,7 +25,6 @@ def main():
         with open(args.output, 'w') as f:
             f.write(clipboard_string)
     print(clipboard_string)
-
 
 description_msg = 'Lint and restructure e-mail text.'
 parser = argparse.ArgumentParser(prog='./' + os.path.basename(__file__),
