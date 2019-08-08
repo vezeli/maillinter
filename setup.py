@@ -33,11 +33,15 @@ setuptools.setup(
     author_email=about['__email__'],
     description=about['__summary__'],
     long_description=long_description,
-    long_description_content_type='text/markdown',
     package_dir={'': 'src'},
-    packaged=setuptools.find_packages(where='src'),
+    packages=setuptools.find_packages(where='src'),
     setup_requires=['setuptools_scm'],
     install_requires=['setuptools_scm', 'pyperclip', 'pip-tools'],
+    entry_points={
+        "console_scripts": [
+            "maillinter = maillinter.maillinter:main",
+        ]
+    },
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

@@ -3,11 +3,11 @@
 import argparse
 import os
 
-import base
 import pyperclip
-from setuptools_scm import get_version
 
-__version__ = get_version(root="../..", relative_to=__file__)
+from maillinter import base
+from maillinter.__about__ import get_local_version
+
 
 def main():
     with open(args.input_file, 'r') as f:
@@ -33,7 +33,7 @@ parser.add_argument('input_file', type=str)
 parser.add_argument('-v',
                     '--version',
                     action='version',
-                    version='%(prog)s {version}'.format(version=__version__))
+                    version='%(prog)s {version}'.format(version=get_local_version()))
 parser.add_argument('-w',
                     '--wrap',
                     dest='width',
