@@ -39,7 +39,7 @@ setuptools.setup(
     install_requires=['setuptools_scm', 'pyperclip', 'pip-tools'],
     entry_points={
         "console_scripts": [
-            "maillinter = maillinter.maillinter:main",
+            "maillinter = maillinter.scripts.__main__:cli",
         ]
     },
     classifiers=[

@@ -9,7 +9,7 @@ from maillinter import base
 from maillinter.__about__ import get_local_version
 
 
-def main():
+def cli():
     with open(args.input_file, 'r') as f:
         text = f.read()
     paragraphs = text.split('\n\n')
@@ -56,4 +56,4 @@ parser.add_argument('-S',
 args = parser.parse_args()
 
 if __name__ == '__main__':
-    main()
+    cli()
