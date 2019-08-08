@@ -5,8 +5,7 @@ import os
 
 import pyperclip
 
-from maillinter import base
-from maillinter.__about__ import get_local_version
+from maillinter import base, __version__
 
 
 def cli():
@@ -33,7 +32,7 @@ parser.add_argument('input_file', type=str)
 parser.add_argument('-v',
                     '--version',
                     action='version',
-                    version='%(prog)s {version}'.format(version=get_local_version()))
+                    version='%(prog)s {version}'.format(version=__version__))
 parser.add_argument('-w',
                     '--wrap',
                     dest='width',
