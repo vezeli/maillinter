@@ -5,10 +5,13 @@ import os
 
 import pyperclip
 
-from maillinter import base, __version__
+from maillinter import base
+from maillinter.scripts import __version__, __sign__
 
 
 def cli():
+    print(__sign__)
+
     with open(args.input_file, 'r') as f:
         text = f.read()
     paragraphs = text.split('\n\n')
