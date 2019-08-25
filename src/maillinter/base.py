@@ -34,9 +34,9 @@ class Paragraph:
     count = 0
 
     def __init__(self, text):
-        self.text = text
+        self._text = text
         self.subparagraphs = make_subparagraphs(text)
-        self.salute_or_end = self.is_salute_or_end()
+        self.soe = self.is_soe()
         self.increment_count()
 
     def __repr__(self):
@@ -47,11 +47,15 @@ class Paragraph:
             subparagraph.text for subparagraph in self.subparagraphs
         )
 
-    def is_salute_or_end(self):
+    def is_soe(self):
         """Check if the 'Paragraph' is either a salute or an end paragraph."""
         return any(
             subparagraph.text.istitle() for subparagraph in self.subparagraphs
         )
+
+    @property
+    def text(self):
+        return self._text
 
     @classmethod
     def get_count(cls):
@@ -106,7 +110,7 @@ class Email:
         for paragraph in self:
             used_kwargs = dict(kwargs)
 
-            if paragraph.salute_or_end:
+            if paragraph.soe:
                 used_kwargs.update({'initial_indent': ''})
 
             for subparagraph in paragraph.subparagraphs:
