@@ -1,19 +1,32 @@
 # -*- coding: utf-8 -*-
 import collections
+import re
 import textwrap
 
-NEW_LINE = r'\newline'
 
 def lint_text(text):
     """Remove consecutive whitespace characters from 'text'."""
-    return ' '.join(text.split())
+    return " ".join(re.split("\s+", text, flags=re.UNICODE))
 
 
-def split_text(text):
-    r"""Return 'text' as a list of strings split at '\\' and '\newline'."""
-    text = text.replace(r'\\', NEW_LINE)
-    parts = text.split(NEW_LINE)
-    subparagraphs = [TextContainer(part) for part in parts]
+def make_subparagraphs(text):
+    r"""Create TextContainer instances from 'text'.
+
+    Parameters
+    ==========
+    text : string
+        Contents of a paragraph (single paragraph only)
+
+    Returns
+    =======
+    list
+        A list of TextContainer instances for each subparagraph in the 'text'
+        that is delimited with \n character. Ordering of the TextConainter
+        instances in the list reproduces 'text'.
+    """
+    assert '\n\n' not in text, r'\n\n passed to TextContainer'
+
+    subparagraphs = [TextContainer(part) for part in text.split('\n')]
     return subparagraphs
 
 
@@ -22,7 +35,7 @@ class Paragraph:
 
     def __init__(self, text):
         self.text = text
-        self.subparagraphs = split_text(text)
+        self.subparagraphs = make_subparagraphs(text)
         self.salute_or_end = self.is_salute_or_end()
         self.increment_count()
 
