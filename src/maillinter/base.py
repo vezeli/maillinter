@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import collections
 import re
 import textwrap
@@ -6,16 +5,16 @@ import textwrap
 
 def lint_text(text):
     """Remove consecutive whitespace characters from 'text'."""
-    return " ".join(re.split("\s+", text, flags=re.UNICODE))
+    return " ".join(re.split(r'\s+', text, flags=re.UNICODE))
 
 
 def make_subparagraphs(text):
-    r"""Create TextContainer instances from 'text'.
+    r"""Create a list of TextContainer instances.
 
     Parameters
     ==========
     text : string
-        Contents of a paragraph (single paragraph only)
+        Contents of a paragraph (cannot contain \n\n)
 
     Returns
     =======
@@ -24,7 +23,7 @@ def make_subparagraphs(text):
         that is delimited with \n character. Ordering of the TextConainter
         instances in the list reproduces 'text'.
     """
-    assert '\n\n' not in text, r'\n\n passed to TextContainer'
+    assert '\n\n' not in text, r'cannot pass \n\n to Paragraph instance'
 
     subparagraphs = [TextContainer(part) for part in text.split('\n')]
     return subparagraphs
@@ -36,7 +35,6 @@ class Paragraph:
     def __init__(self, text):
         self._text = text
         self.subparagraphs = make_subparagraphs(text)
-        self.soe = self.is_soe()
         self.increment_count()
 
     def __repr__(self):
@@ -45,12 +43,6 @@ class Paragraph:
     def __str__(self):
         return '\n'.join(
             subparagraph.text for subparagraph in self.subparagraphs
-        )
-
-    def is_soe(self):
-        """Check if the 'Paragraph' is either a salute or an end paragraph."""
-        return any(
-            subparagraph.text.istitle() for subparagraph in self.subparagraphs
         )
 
     @property
@@ -107,11 +99,7 @@ class Email:
         return string
 
     def wrap(self, width, **kwargs):
-        for paragraph in self:
-            used_kwargs = dict(kwargs)
-
-            if paragraph.soe:
-                used_kwargs.update({'initial_indent': ''})
-
+        middle_paragraphs = slice(1, len(self) - 1)
+        for paragraph in self[middle_paragraphs]:
             for subparagraph in paragraph.subparagraphs:
-                subparagraph._wrap(width, **used_kwargs)
+                subparagraph._wrap(width, **kwargs)
