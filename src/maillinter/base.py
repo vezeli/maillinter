@@ -1,78 +1,51 @@
-import collections
-import re
 import textwrap
 
-
-def lint_text(text):
-    """Remove consecutive whitespace characters from 'text'."""
-    return " ".join(re.split(r'\s+', text, flags=re.UNICODE))
-
-
-def make_subparagraphs(text):
-    r"""Create a list of TextContainer instances.
+class Paragraph:
+    r"""Class that represents a paragraph of text.
 
     Parameters
     ==========
-    text : string
-        Contents of a paragraph (cannot contain \n\n)
-
-    Returns
-    =======
-    list
-        A list of TextContainer instances for each subparagraph in the 'text'
-        that is delimited with \n character. Ordering of the TextConainter
-        instances in the list reproduces 'text'.
+    text : str
+        Holds textual content of the paragraph.
+    subpars : list
+        List of tuples that holds information about the subparagraphs of the
+        current paragraph. Subparagraphs are the results of splitting the
+        paragraph using the newline characters \n.
     """
-    assert '\n\n' not in text, r'cannot pass \n\n to Paragraph instance'
-
-    subparagraphs = [TextContainer(part) for part in text.split('\n')]
-    return subparagraphs
-
-
-class Paragraph:
-    count = 0
-
-    def __init__(self, text):
-        self._text = text
-        self.subparagraphs = make_subparagraphs(text)
-        self.increment_count()
-
-    def __repr__(self):
-        return f'{type(self).__name__}({self.text!r})'
-
-    def __str__(self):
-        return '\n'.join(
-            subparagraph.text for subparagraph in self.subparagraphs
-        )
+    def __init__(self, raw_text):
+        self.subpars = [
+            (n, text) for n, text in enumerate(raw_text.split("\n"))
+        ]
+        self.num_subpars = raw_text.count("\n")
 
     @property
     def text(self):
-        return self._text
+        return "\n".join(text for _, text in self.subpars)
 
-    @classmethod
-    def get_count(cls):
-        return cls.count
+    def remove_whitespace(self):
+        t = str()
+        for n, text in self.subpars:
+            if n == 0:
+                t += " ".join(text.split())
+            else:
+                t += "\n" + " ".join(text.split())
+        return t
 
-    @classmethod
-    def increment_count(cls):
-        cls.count += 1
-
-
-class TextContainer:
-
-    def __init__(self, text):
-        self.raw_text = text
-        self.text = lint_text(text)
+    def wrap(self, width, **kwargs):
+        """Wrap self.formatted_text using textwrap library."""
+        try:
+            wrapped_lines = textwrap.wrap(
+                    self.formatted_text, width, **kwargs
+            )
+            self.formatted_text = '\n'.join(line for line in wrapped_lines)
+        except AttributeError as e:
+            print(f"Error: {e}")
 
     def __repr__(self):
-        return f'{type(self).__name__}({self.raw_text!r})'
+        return f"{type(self).__name__}({self.text!r})"
 
     def __str__(self):
         return self.text
-
-    def _wrap(self, width, **kwargs):
-        wrapped_lines = textwrap.wrap(self.text, width, **kwargs)
-        self.text = '\n'.join(line for line in wrapped_lines)
 
 
 class Email:
