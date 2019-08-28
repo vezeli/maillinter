@@ -3,46 +3,56 @@ import textwrap
 class Paragraph:
     r"""Class that represents a paragraph of text.
 
-    Parameters
+    Attributes
     ==========
-    text : str
-        Holds textual content of the paragraph.
-    subpars : list
-        List of tuples that holds information about the subparagraphs of the
-        current paragraph. Subparagraphs are the results of splitting the
-        paragraph using the newline characters \n.
+    spars : list
+        List of tuples holding information about subparagraphs, i.e.,
+        subparagraph number and subparagraph content. Subparagraphs are the
+        results of splitting paragraph using the newline characters \n.
+    text : string
+        Holds contents of a paragraph.
     """
     def __init__(self, raw_text):
-        self.subpars = [
-            (n, text) for n, text in enumerate(raw_text.split("\n"))
-        ]
-        self.num_subpars = raw_text.count("\n")
+        self.spars_count = raw_text.count('\n')
+        self.spars = self.make_spars(raw_text)
+
+    @staticmethod
+    def make_spars(string):
+        return [(n, c) for n, c in enumerate(string.split('\n'))]
 
     @property
     def text(self):
-        return "\n".join(text for _, text in self.subpars)
+        return '\n'.join(c for _, c in self.spars)
 
-    def remove_whitespace(self):
-        t = str()
-        for n, text in self.subpars:
+    @text.setter
+    def text(self, value):
+        self.spars = [(n, c) for n, c in enumerate(value.split('\n'))]
+
+    @property
+    def clean_text(self):
+        ctext = str()
+        for n, c in self.spars:
             if n == 0:
-                t += " ".join(text.split())
+                ctext += " ".join(c.split())
             else:
-                t += "\n" + " ".join(text.split())
-        return t
+                ctext += "\n" + " ".join(c.split())
+        return ctext
 
-    def wrap(self, width, **kwargs):
-        """Wrap self.formatted_text using textwrap library."""
-        try:
-            wrapped_lines = textwrap.wrap(
-                    self.formatted_text, width, **kwargs
-            )
-            self.formatted_text = '\n'.join(line for line in wrapped_lines)
-        except AttributeError as e:
-            print(f"Error: {e}")
+    @property
+    def clean_spars(self):
+        return self.make_spars(self.clean_text)
+
+    def wrap_text(self, width, **kwargs):
+        wtext = str()
+        for n, c in self.clean_spars:
+            if n == 0:
+                wtext += textwrap.fill(c, width, **kwargs)
+            else:
+                wtext += "\n" + textwrap.fill(c, width, **kwargs)
+        return wtext
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.text!r})"
+        return f'{type(self).__name__}({self.text!r})'
 
     def __str__(self):
         return self.text
@@ -51,28 +61,26 @@ class Paragraph:
 class Email:
 
     def __init__(self, paragraphs):
-        self._paragraphs = paragraphs
+        self.paragraphs = paragraphs
 
     def __getitem__(self, value):
-        return self._paragraphs[value]
+        return self.paragraphs[value]
 
     def __len__(self):
-        return len(self._paragraphs)
+        return len(self.paragraphs)
 
     def __repr__(self):
-        return f'{type(self).__name__}({self._paragraphs!r})'
+        return f'{type(self).__name__}({self.paragraphs!r})'
 
     def __str__(self):
         string = str()
-        for paragraph in self._paragraphs:
-            if paragraph is self._paragraphs[-1]:
+        for paragraph in self:
+            if paragraph is self[-1]:
                 string += str(paragraph)
             else:
                 string += str(paragraph) + '\n\n'
         return string
 
     def wrap(self, width, **kwargs):
-        middle_paragraphs = slice(1, len(self) - 1)
-        for paragraph in self[middle_paragraphs]:
-            for subparagraph in paragraph.subparagraphs:
-                subparagraph._wrap(width, **kwargs)
+        string = [paragraph.wrap_text(width, **kwargs) for paragraph in self]
+        return '\n\n'.join(string)

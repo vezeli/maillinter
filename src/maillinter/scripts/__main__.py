@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 import argparse
 import os
 
@@ -13,14 +12,14 @@ def cli():
     print(__sign__)
 
     with open(args.input_file, 'r') as f:
-        text = f.read()
-    paragraphs = text.split('\n\n')
-    paragraphs = [base.Paragraph(text) for text in paragraphs]
+        content = f.read()
+    paragraphs = content.split('\n\n')
+    paragraphs = [base.Paragraph(paragraph) for paragraph in paragraphs]
 
     mail = base.Email(paragraphs)
-    mail.wrap(width=args.width, initial_indent=args.indent)
+    wrapped = mail.wrap(width=args.width, initial_indent=args.indent)
 
-    clipboard_string = str(mail)
+    clipboard_string = wrapped
     pyperclip.copy(clipboard_string)
 
     if args.output:
