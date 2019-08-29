@@ -1,7 +1,6 @@
-venv/
 .eggs/
+src/maillinter.egg-info/
 
 **/__pycache__
 **/*.swp
 **/tags
-**/src/mail_dir

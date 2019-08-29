@@ -1,19 +1,24 @@
 import textwrap
 
+
 class Paragraph:
     r"""Class that represents a paragraph of text.
+
+    Parameters
+    ==========
+    raw_text : string
+        Content of a paragraph.
 
     Attributes
     ==========
     spars : list
         List of tuples holding information about subparagraphs, i.e.,
-        subparagraph number and subparagraph content. Subparagraphs are the
+        number and the content of subparagraph. Subparagraphs are the
         results of splitting paragraph using the newline characters \n.
     text : string
         Holds contents of a paragraph.
     """
     def __init__(self, raw_text):
-        self.spars_count = raw_text.count('\n')
         self.spars = self.make_spars(raw_text)
 
     @staticmethod
