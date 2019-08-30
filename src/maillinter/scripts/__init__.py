@@ -10,7 +10,7 @@ except DistributionNotFound:
 try:
     from pyfiglet import figlet_format
 
-    __sign__  = figlet_format("maillinter", font="big")
+    __sign__ = figlet_format("maillinter", font="big")
 except ImportError:
     __sign__ = r"""
                  _ _ _ _       _
