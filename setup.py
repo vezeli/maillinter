@@ -10,42 +10,41 @@ In case you do not have root privileges use the following command instead:
 
 This installs the library and automatically handle the dependencies.
 """
-import os
-
 import setuptools
 
-base_dir = os.path.dirname(__file__)
-src_dir = os.path.join(base_dir, 'src')
+from pathlib import Path
 
-about = {}
-with open(os.path.join(src_dir, 'maillinter', '__about__.py')) as f:
-    exec(f.read(), about)
+BASE_DIR = Path(__file__).parent
+SRC_DIR = BASE_DIR / "src"
 
-with open(os.path.join(base_dir, "README.md")) as f:
-    long_description = f.read()
+
+def get_long_description():
+    readme_md = BASE_DIR / "README.md"
+    with open(readme_md) as ld_file:
+        return ld_file.read()
+
 
 setuptools.setup(
-    name=about['__title__'],
+    name="mailllinter",
     use_scm_version=True,
-    url=about['__uri__'],
-    license=about['__license__'],
-    author=about['__author__'],
-    author_email=about['__email__'],
-    description=about['__summary__'],
-    long_description=long_description,
-    package_dir={'': 'src'},
-    packages=setuptools.find_packages(where='src'),
-    setup_requires=['setuptools_scm'],
-    install_requires=['setuptools_scm', 'pyperclip'],
-    entry_points={
-        "console_scripts": [
-            "maillinter = maillinter.scripts.__main__:cli",
-        ]
-    },
+    description="The e-mail content formatter.",
+    long_description=get_long_description(),
+    keywords="automation mail linter formatting",
+    author="Velibor Zeli",
+    author_email="zeli.velibor@gmail.com",
+    url="https://github.com/vezeli/maillinter",
+    license="MIT",
+    package_dir={"": "src"},
+    packages=setuptools.find_packages(where="src"),
+    setup_requires=["setuptools_scm"],
+    install_requires=["setuptools_scm", "pyperclip"],
+    entry_points={"console_scripts": ["maillinter = maillinter.scripts.__main__:cli"]},
     classifiers=[
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        'Topic :: Communications :: Email',
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3 :: Only",
+        "Operating System :: OS Independent",
+        "Topic :: Communications :: Email",
     ],
 )
