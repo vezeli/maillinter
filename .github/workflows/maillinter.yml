@@ -1,0 +1,36 @@
+name: maillinter
+
+on: 
+  push:
+    paths: '*.py'
+  pull_requrest:
+    paths: '*.py'
+      
+jobs:
+  runs-on: ${{ matrix.os }}
+  strategy:
+    matrix:
+      python-version: [3.6, 3.7]
+      os: [ubuntu-latest, ubuntu-18.04]
+
+  steps:
+    build:
+      name: Build dependencies
+      run: apt install xclip xsel
+  
+  steps:
+    install:
+      name: Install ${{ name }}
+      run: python3 setup.py install
+  
+  steps:
+    install pytest:
+      name: Install pytest
+      run: |
+        python3 -m pip install --upgrade pip
+        pip3 install pytest
+        
+  steps:
+    test:
+      name: Run tests
+      run: pytest -vv
