@@ -1,6 +1,16 @@
 import textwrap
 
-from .constants import DEFAULT_WRAP_LENGTH
+import nltk
+
+from .constants import DEFAULT_MONOSPACED, DEFAULT_WRAP_LENGTH
+
+punkt = nltk.data.load("tokenizers/punkt/english.pickle")
+
+# Quick hack,
+# regarding the issue https://github.com/nltk/nltk/issues/2376
+added_abbrev_types = {"al", "e.g", "i.e"}
+for item in added_abbrev_types - punkt._params.abbrev_types:
+    punkt._params.abbrev_types.add(item)
 
 
 class Paragraph:
@@ -8,7 +18,7 @@ class Paragraph:
 
     Parameters
     ==========
-    raw_text : string
+    content : string
         Content of a paragraph.
 
     Attributes
@@ -21,8 +31,9 @@ class Paragraph:
         Holds contents of a paragraph.
     """
 
-    def __init__(self, raw_text):
-        self.spars = self.make_spars(raw_text)
+    def __init__(self, content, style="common"):
+        self.spars = self.make_spars(content)
+        self.style = style
 
     @staticmethod
     def make_spars(string):
@@ -39,6 +50,8 @@ class Paragraph:
     @property
     def clean_text(self):
         cleaned_content = [" ".join(c.split()) for _, c in self.spars]
+        if self.double_space_after_sentence:
+            cleaned_content = ("  ".join(punkt.tokenize(cl)) for cl in cleaned_content)
         return "\n".join(cleaned_content)
 
     @property
@@ -48,7 +61,13 @@ class Paragraph:
     def wrap_text(self, **kwargs):
         w = kwargs.get("width", DEFAULT_WRAP_LENGTH)
         wrapped_content = [textwrap.fill(c, w) for _, c in self.clean_spars]
+        if self.double_space_after_sentence:
+            wrapped_content = ("  ".join(punkt.tokenize(cl)) for cl in wrapped_content)
         return "\n".join(wrapped_content)
+
+    @property
+    def double_space_after_sentence(self):
+        return {"monospaced": True, "common": False}[self.style]
 
     def __repr__(self):
         return f"{type(self).__name__}({self.text!r})"
@@ -67,18 +86,12 @@ class Email:
     def __len__(self):
         return len(self.paragraphs)
 
+    def wrap(self, width, **kwargs):
+        string = [paragraph.wrap_text(**kwargs) for paragraph in self]
+        return "\n\n".join(string)
+
     def __repr__(self):
         return f"{type(self).__name__}({self.paragraphs!r})"
 
     def __str__(self):
-        string = str()
-        for paragraph in self:
-            if paragraph is self[-1]:
-                string += str(paragraph)
-            else:
-                string += str(paragraph) + "\n\n"
-        return string
-
-    def wrap(self, width, **kwargs):
-        string = [paragraph.wrap_text(**kwargs) for paragraph in self]
-        return "\n\n".join(string)
+        return "\n\n".join(self)
