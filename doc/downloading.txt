@@ -1,0 +1,4 @@
+"""
+The purpose,is to ensure that the necessary directory, i.e.,
+``nltk_data``, and its contents is present fork
+"""

@@ -15,7 +15,6 @@ import setuptools
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
-SRC_DIR = BASE_DIR / "src"
 
 
 def get_long_description():
@@ -25,7 +24,7 @@ def get_long_description():
 
 
 setuptools.setup(
-    name="mailllinter",
+    name="maillinter",
     use_scm_version=True,
     description="The e-mail content formatter.",
     long_description=get_long_description(),
@@ -37,7 +36,7 @@ setuptools.setup(
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
     setup_requires=["setuptools_scm"],
-    install_requires=["setuptools_scm", "pyperclip"],
+    install_requires=["setuptools_scm", "pyperclip", "nltk"],
     entry_points={"console_scripts": ["maillinter = maillinter.scripts.__main__:cli"]},
     classifiers=[
         "License :: OSI Approved :: MIT License",
