@@ -11,6 +11,8 @@ jobs:
         python-version: [3.6, 3.7]
 
     steps:
+    - name: Install xclip and xsel
+      run: sudo apt-get install xclip xsel
     - uses: actions/checkout@v1
     - name: Setup Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
