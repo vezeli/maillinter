@@ -25,7 +25,7 @@ def get_long_description():
 
 setuptools.setup(
     name="maillinter",
-    use_scm_version=True,
+    use_scm_version={"write_to": "src/maillinter/_version.py"},
     description="The e-mail content formatter.",
     long_description=get_long_description(),
     keywords="automation mail linter formatting",

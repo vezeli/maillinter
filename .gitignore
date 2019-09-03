@@ -1,6 +1,10 @@
-.eggs/
-src/maillinter.egg-info/
+.eggs
+src/maillinter/_version.py
 
-**/__pycache__
+build
+dist
+src/maillinter.egg-info
+
 **/*.swp
 **/tags
+**/__pycache__
