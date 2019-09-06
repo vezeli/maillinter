@@ -72,7 +72,7 @@ def test_default_paragraph_single_subparagraph_text(paragraph_content):
 def test_default_paragraph_single_subparagraph_str_repr(paragraph_content):
     clean_content = paragraph_content[0]
     paragraph = Paragraph(clean_content)
-    repr_paragraph = "Paragraph('" + clean_content + "')"
+    repr_paragraph = f"Paragraph({clean_content!r}, 'common')"
     assert print(paragraph.text) == print(clean_content)
     assert "{!r}".format(paragraph) == repr_paragraph
 
@@ -107,7 +107,7 @@ def test_common_paragraph_multiple_subparagraphs_wrap_text(paragraph_content_mul
     assert paragraph.wrap_text(width=47) == wrapped_content
 
 
-def test_double_space_paragraph_multiple_subparagraphs_wrap_text(
+def test_monospaced_paragraph_multiple_subparagraphs_wrap_text(
     paragraph_content_multiple
 ):
     dirty_content = paragraph_content_multiple[1]

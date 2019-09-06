@@ -6,8 +6,8 @@ from .constants import DEFAULT_MONOSPACED, DEFAULT_WRAP_LENGTH
 
 punkt = nltk.data.load("tokenizers/punkt/english.pickle")
 
-# Quick hack,
-# regarding the issue https://github.com/nltk/nltk/issues/2376
+# Quick hack, regarding corner cases in nltk-sentence splitting,
+# see https://github.com/nltk/nltk/issues/2376 for details.
 added_abbrev_types = {"al", "e.g", "i.e"}
 for item in added_abbrev_types - punkt._params.abbrev_types:
     punkt._params.abbrev_types.add(item)
@@ -70,7 +70,7 @@ class Paragraph:
         return {"monospaced": True, "common": False}[self.style]
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.text!r})"
+        return f"{type(self).__name__}({self.text!r}, {self.style!r})"
 
     def __str__(self):
         return self.text

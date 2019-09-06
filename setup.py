@@ -12,22 +12,16 @@ This installs the library and automatically handle the dependencies.
 """
 import setuptools
 
-from pathlib import Path
 
-BASE_DIR = Path(__file__).parent
-
-
-def get_long_description():
-    readme_md = BASE_DIR / "README.md"
-    with open(readme_md) as ld_file:
-        return ld_file.read()
+with open("README.md") as fp:
+    long_description = fp.read()
 
 
 setuptools.setup(
     name="maillinter",
     use_scm_version={"write_to": "src/maillinter/_version.py"},
     description="The e-mail content formatter.",
-    long_description=get_long_description(),
+    long_description=long_description,
     keywords="automation mail linter formatting",
     author="Velibor Zeli",
     author_email="zeli.velibor@gmail.com",
