@@ -1,12 +1,15 @@
 import textwrap
 
-import nltk
+from nltk import data
+from urlextract import URLExtract
 
 from .constants import DEFAULT_MONOSPACED, DEFAULT_WRAP_LENGTH
 
-punkt = nltk.data.load("tokenizers/punkt/english.pickle")
+extractor = URLExtract()
 
-# Quick hack, regarding corner cases in nltk-sentence splitting,
+punkt = data.load("tokenizers/punkt/english.pickle")
+
+# Quick hack, regarding corner cases in sentence splitting,
 # see https://github.com/nltk/nltk/issues/2376 for details.
 added_abbrev_types = {"al", "e.g", "i.e"}
 for item in added_abbrev_types - punkt._params.abbrev_types:
@@ -30,7 +33,6 @@ class Paragraph:
     text : string
         Holds contents of a paragraph.
     """
-
     def __init__(self, content, style="common"):
         self.spars = self.make_spars(content)
         self.style = style
@@ -67,6 +69,10 @@ class Paragraph:
     def double_space_after_sentence(self):
         return {"monospaced": True, "common": False}[self.style]
 
+    @property
+    def has_urls(self):
+        return extractor.has_urls(self.text)
+
     def __repr__(self):
         return f"{type(self).__name__}({self.text!r}, {self.style!r})"
 
@@ -74,22 +80,39 @@ class Paragraph:
         return self.text
 
 
+class Url:
+    def __init__(self, content):
+        self.content = content
+
+    def __repr__(self):
+        return f"{type(self).__name__}({self.content})"
+
+    def __str__(self):
+        return self.content
+
+
 class Email:
     def __init__(self, paragraphs):
         self.paragraphs = paragraphs
 
-    def __getitem__(self, value):
-        return self.paragraphs[value]
-
-    def __len__(self):
-        return len(self.paragraphs)
+    @property
+    def urls(self):
+        if any(paragraph.has_urls for paragraph in self.paragraphs):
+            return [Url(link) for link in extractor.gen_urls(str(self))]
+        return []
 
     def wrap(self, width, **kwargs):
         string = [paragraph.wrap_text(**kwargs) for paragraph in self]
         return "\n\n".join(string)
 
+    def __len__(self):
+        return len(self.paragraphs)
+
+    def __getitem__(self, value):
+        return self.paragraphs[value]
+
     def __repr__(self):
         return f"{type(self).__name__}({self.paragraphs!r})"
 
     def __str__(self):
-        return "\n\n".join(self)
+        return "\n\n".join(str(paragraph) for paragraph in self)
