@@ -45,7 +45,7 @@ class Paragraph:
 
     @text.setter
     def text(self, value):
-        self.spars = [(n, c) for n, c in enumerate(value.split("\n"))]
+        self.spars = make_spars(value)
 
     @property
     def clean_text(self):
@@ -61,8 +61,6 @@ class Paragraph:
     def wrap_text(self, **kwargs):
         w = kwargs.get("width", DEFAULT_WRAP_LENGTH)
         wrapped_content = [textwrap.fill(c, w) for _, c in self.clean_spars]
-        if self.double_space_after_sentence:
-            wrapped_content = ("  ".join(punkt.tokenize(cl)) for cl in wrapped_content)
         return "\n".join(wrapped_content)
 
     @property
