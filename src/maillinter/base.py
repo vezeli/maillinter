@@ -33,6 +33,7 @@ class Paragraph:
     text : string
         Holds contents of a paragraph.
     """
+
     def __init__(self, content, style="common"):
         self.spars = self.make_spars(content)
         self.style = style
@@ -81,14 +82,15 @@ class Paragraph:
 
 
 class Url:
-    def __init__(self, content):
-        self.content = content
+    def __init__(self, address, count):
+        self.address = address
+        self.count = count
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.content})"
+        return f"{type(self).__name__}({self.address})"
 
     def __str__(self):
-        return self.content
+        return self.address
 
 
 class Email:
@@ -98,7 +100,10 @@ class Email:
     @property
     def urls(self):
         if any(paragraph.has_urls for paragraph in self.paragraphs):
-            return [Url(link) for link in extractor.gen_urls(str(self))]
+            return [
+                Url(address, count)
+                for count, address in enumerate(extractor.gen_urls(str(self)))
+            ]
         return []
 
     def wrap(self, width, **kwargs):
