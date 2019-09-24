@@ -64,6 +64,16 @@ def paragraph_content_multiple(paragraph_content):
     return clean_content, dirty_content, wrapped_content, double_space_wrapped_content
 
 
+@pytest.fixture
+def paragraph_content_multiple_links():
+    content = (
+        "I enjoy reading (PhD Comics)[http://phdcomics.com/]. "
+        "If you like them as well, you should definitely check out "
+        "(this one)[http://phdcomics.com/comics/archive.php?comicid=1296]."
+    )
+    return content
+
+
 def test_default_paragraph_single_subparagraph_text(paragraph_content):
     clean_content = paragraph_content[0]
     assert Paragraph(clean_content).clean_text == clean_content
@@ -100,17 +110,28 @@ def test_default_paragraph_multiple_subparagraphs_wrap_text(paragraph_content_mu
     assert paragraph.wrap_text(width=47) == wrapped_content
 
 
-def test_common_paragraph_multiple_subparagraphs_wrap_text(paragraph_content_multiple):
+def test_common_style_paragraph_multiple_subparagraphs_wrap_text(
+    paragraph_content_multiple
+):
     dirty_content = paragraph_content_multiple[1]
     wrapped_content = paragraph_content_multiple[2]
     paragraph = Paragraph(dirty_content, style="common")
     assert paragraph.wrap_text(width=47) == wrapped_content
 
 
-def test_monospaced_paragraph_multiple_subparagraphs_wrap_text(
+def test_monospaced_style_paragraph_multiple_subparagraphs_wrap_text(
     paragraph_content_multiple
 ):
     dirty_content = paragraph_content_multiple[1]
     double_space_wrapped_content = paragraph_content_multiple[3]
     paragraph = Paragraph(dirty_content, style="monospaced")
     assert paragraph.wrap_text(width=47) == double_space_wrapped_content
+
+
+def test_default_paragraph_has_links(
+    paragraph_content, paragraph_content_multiple_links
+):
+    paragraph_without_links = Paragraph(paragraph_content[0])
+    paragraph_with_links = Paragraph(paragraph_content_multiple_links)
+    assert paragraph_without_links.has_links == False
+    assert paragraph_with_links.has_links == True

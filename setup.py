@@ -30,7 +30,7 @@ setuptools.setup(
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
     setup_requires=["setuptools_scm"],
-    install_requires=["nltk", "pyperclip", "setuptools_scm", "urlextract"],
+    install_requires=["nltk", "pyperclip", "setuptools_scm"],
     entry_points={"console_scripts": ["maillinter = maillinter.scripts.__main__:cli"]},
     classifiers=[
         "License :: OSI Approved :: MIT License",

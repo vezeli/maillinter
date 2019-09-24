@@ -1,11 +1,9 @@
 import textwrap
 
 from nltk import data
-from urlextract import URLExtract
 
 from .constants import DEFAULT_MONOSPACED, DEFAULT_WRAP_LENGTH
-
-extractor = URLExtract()
+from .style import re_link, get_links
 
 punkt = data.load("tokenizers/punkt/english.pickle")
 
@@ -71,8 +69,8 @@ class Paragraph:
         return {"monospaced": True, "common": False}[self.style]
 
     @property
-    def has_urls(self):
-        return extractor.has_urls(self.text)
+    def has_links(self):
+        return bool(re_link.search(self.text))
 
     def __repr__(self):
         return f"{type(self).__name__}({self.text!r}, {self.style!r})"
@@ -81,16 +79,16 @@ class Paragraph:
         return self.text
 
 
-class Url:
-    def __init__(self, address, count):
-        self.address = address
-        self.count = count
+class Link:
+    def __init__(self, anchor, url):
+        self.anchor = anchor
+        self.url = url
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.address})"
+        return f"{type(self).__name__}({self.anchor}, {self.url})"
 
     def __str__(self):
-        return self.address
+        return "".join(["(", self.anchor, ")", "[", self.url, "]"])
 
 
 class Email:
@@ -99,11 +97,8 @@ class Email:
 
     @property
     def urls(self):
-        if any(paragraph.has_urls for paragraph in self.paragraphs):
-            return [
-                Url(address, count)
-                for count, address in enumerate(extractor.gen_urls(str(self)))
-            ]
+        if any(paragraph.has_links for paragraph in self.paragraphs):
+            return [Link(anchor, url) for anchor, url in get_links(str(self))]
         return []
 
     def wrap(self, width, **kwargs):
