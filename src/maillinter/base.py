@@ -46,7 +46,7 @@ class Paragraph:
 
     @text.setter
     def text(self, value):
-        self.spars = make_spars(value)
+        self.spars = self.make_spars(value)
 
     @property
     def clean_text(self):
