@@ -102,18 +102,44 @@ class Link:
 
 
 class Email:
-    def __init__(self, paragraphs):
-        self.paragraphs = paragraphs
+    def __init__(self, content):
+        self.paragraphs = self.make_paragraphs(content)
+
+    @staticmethod
+    def make_paragraphs(content):
+        return [Paragraph(par) for par in content.split("\n\n")]
 
     @property
-    def urls(self):
-        if any(paragraph.has_links for paragraph in self.paragraphs):
+    def text(self):
+        return "\n\n".join(par.text for par in self)
+
+    @text.setter
+    def text(self, content):
+        self.paragraphs = self.make_paragraphs(content)
+
+    @property
+    def links(self):
+        if any(par.has_links for par in self.paragraphs):
             return [Link(anchor, url) for anchor, url in get_links(str(self))]
         return []
 
+    def substitute_links(self):
+        for num, l in enumerate(self.links):
+            self.text = self.text.replace(l.raw, l.as_standard_text(num))
+
     def wrap(self, width, **kwargs):
-        string = [paragraph.wrap_text(**kwargs) for paragraph in self]
+        string = [par.wrap_text(**kwargs) for par in self]
         return "\n\n".join(string)
+
+    @classmethod
+    def from_paragraphs(cls, paragraphs=None):
+        if paragraphs is None:
+            paragraphs = []
+        else:
+            paragrpahs = [paragraphs]
+
+        content = "\n\n".join(par.text for par in paragraphs)
+        return cls(content)
 
     def __len__(self):
         return len(self.paragraphs)
@@ -125,4 +151,4 @@ class Email:
         return f"{type(self).__name__}({self.paragraphs!r})"
 
     def __str__(self):
-        return "\n\n".join(str(paragraph) for paragraph in self)
+        return self.text
