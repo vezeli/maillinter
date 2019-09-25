@@ -84,11 +84,21 @@ class Link:
         self.anchor = anchor
         self.url = url
 
+    def as_reference(self, value):
+        return "".join(["[", str(value), "]  ", self.url])
+
+    def as_standard_text(self, value):
+        return "".join([self.anchor, " [", str(value), "]"])
+
+    @property
+    def raw(self):
+        return "".join(["(", self.anchor, ")", "[", self.url, "]"])
+
     def __repr__(self):
         return f"{type(self).__name__}({self.anchor}, {self.url})"
 
     def __str__(self):
-        return "".join(["(", self.anchor, ")", "[", self.url, "]"])
+        return self.raw
 
 
 class Email:
