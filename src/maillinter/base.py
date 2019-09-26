@@ -3,7 +3,7 @@ import textwrap
 from nltk import data
 
 from .constants import DEFAULT_MONOSPACED, DEFAULT_WRAP_LENGTH
-from .style import re_link, get_links
+from .style import re_link, gen_links
 
 punkt = data.load("tokenizers/punkt/english.pickle")
 
@@ -59,9 +59,10 @@ class Paragraph:
     def clean_spars(self):
         return self.make_spars(self.clean_text)
 
-    def wrap_text(self, **kwargs):
-        w = kwargs.get("width", DEFAULT_WRAP_LENGTH)
-        wrapped_content = [textwrap.fill(c, w) for _, c in self.clean_spars]
+    def wrap_text(self, *args, **kwargs):
+        wrapped_content = [
+            textwrap.fill(c, *args, **kwargs) for _, c in self.clean_spars
+        ]
         return "\n".join(wrapped_content)
 
     @property
@@ -120,15 +121,15 @@ class Email:
     @property
     def links(self):
         if any(par.has_links for par in self.paragraphs):
-            return [Link(anchor, url) for anchor, url in get_links(str(self))]
+            return [Link(anchor, url) for anchor, url in gen_links(self.text)]
         return []
 
     def substitute_links(self):
-        for num, l in enumerate(self.links):
+        for num, l in enumerate(self.links, 1):
             self.text = self.text.replace(l.raw, l.as_standard_text(num))
 
-    def wrap(self, width, **kwargs):
-        string = [par.wrap_text(**kwargs) for par in self]
+    def wrap(self, width=DEFAULT_WRAP_LENGTH, *args, **kwargs):
+        string = [par.wrap_text(width, *args, **kwargs) for par in self]
         return "\n\n".join(string)
 
     @classmethod

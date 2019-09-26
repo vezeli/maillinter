@@ -9,6 +9,6 @@ re_link = re.compile(
 )
 
 
-def get_links(text):
+def gen_links(text):
     for link in re_link.finditer(text):
         yield link.group("anchor"), link.group("url")
