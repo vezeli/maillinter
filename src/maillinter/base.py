@@ -3,7 +3,7 @@ import textwrap
 from nltk import data
 
 from .constants import DEFAULT_MONOSPACED, DEFAULT_WRAP_LENGTH
-from .style import re_link, get_links
+from .style import re_link, gen_links
 
 punkt = data.load("tokenizers/punkt/english.pickle")
 
@@ -59,9 +59,10 @@ class Paragraph:
     def clean_spars(self):
         return self.make_spars(self.clean_text)
 
-    def wrap_text(self, **kwargs):
-        w = kwargs.get("width", DEFAULT_WRAP_LENGTH)
-        wrapped_content = [textwrap.fill(c, w) for _, c in self.clean_spars]
+    def wrap_text(self, *args, **kwargs):
+        wrapped_content = [
+            textwrap.fill(c, *args, **kwargs) for _, c in self.clean_spars
+        ]
         return "\n".join(wrapped_content)
 
     @property
@@ -84,26 +85,57 @@ class Link:
         self.anchor = anchor
         self.url = url
 
+    def as_reference(self, value):
+        return "".join(["[", str(value), "]  ", self.url])
+
+    def as_standard_text(self, value):
+        return "".join([self.anchor, " [", str(value), "]"])
+
+    @property
+    def raw(self):
+        return "".join(["(", self.anchor, ")", "[", self.url, "]"])
+
     def __repr__(self):
         return f"{type(self).__name__}({self.anchor}, {self.url})"
 
     def __str__(self):
-        return "".join(["(", self.anchor, ")", "[", self.url, "]"])
+        return self.raw
 
 
 class Email:
-    def __init__(self, paragraphs):
-        self.paragraphs = paragraphs
+    def __init__(self, content):
+        self.paragraphs = self.make_paragraphs(content)
+
+    @staticmethod
+    def make_paragraphs(content):
+        return [Paragraph(par) for par in content.split("\n\n")]
 
     @property
-    def urls(self):
-        if any(paragraph.has_links for paragraph in self.paragraphs):
-            return [Link(anchor, url) for anchor, url in get_links(str(self))]
+    def text(self):
+        return "\n\n".join(par.text for par in self)
+
+    @text.setter
+    def text(self, content):
+        self.paragraphs = self.make_paragraphs(content)
+
+    @property
+    def links(self):
+        if any(par.has_links for par in self.paragraphs):
+            return [Link(anchor, url) for anchor, url in gen_links(self.text)]
         return []
 
-    def wrap(self, width, **kwargs):
-        string = [paragraph.wrap_text(**kwargs) for paragraph in self]
+    def substitute_links(self):
+        for num, l in enumerate(self.links, 1):
+            self.text = self.text.replace(l.raw, l.as_standard_text(num))
+
+    def wrap(self, width=DEFAULT_WRAP_LENGTH, *args, **kwargs):
+        string = [par.wrap_text(width, *args, **kwargs) for par in self]
         return "\n\n".join(string)
+
+    @classmethod
+    def from_paragraphs(cls, paragraphs=None):
+        paragraphs = list() if paragraphs is None else list(paragraphs)
+        return cls("\n\n".join(par.text for par in paragraphs))
 
     def __len__(self):
         return len(self.paragraphs)
@@ -115,4 +147,4 @@ class Email:
         return f"{type(self).__name__}({self.paragraphs!r})"
 
     def __str__(self):
-        return "\n\n".join(str(paragraph) for paragraph in self)
+        return self.text

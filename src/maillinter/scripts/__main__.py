@@ -13,11 +13,9 @@ def cli():
 
     with open(args.input_file, "r") as f:
         content = f.read()
-    paragraphs = content.split("\n\n")
-    paragraphs = [base.Paragraph(paragraph) for paragraph in paragraphs]
 
-    mail = base.Email(paragraphs)
-    wrapped = mail.wrap(width=args.width)
+    mail = base.Email(content)
+    wrapped = mail.wrap(args.width)
 
     clipboard_string = wrapped
     pyperclip.copy(clipboard_string)
