@@ -134,13 +134,8 @@ class Email:
 
     @classmethod
     def from_paragraphs(cls, paragraphs=None):
-        if paragraphs is None:
-            paragraphs = []
-        else:
-            paragrpahs = [paragraphs]
-
-        content = "\n\n".join(par.text for par in paragraphs)
-        return cls(content)
+        paragraphs = list() if paragraphs is None else list(paragraphs)
+        return cls("\n\n".join(par.text for par in paragraphs))
 
     def __len__(self):
         return len(self.paragraphs)
