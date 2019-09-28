@@ -14,7 +14,7 @@
 
 import pytest
 
-from maillinter.style import re_link
+from maillinter.style import link_pattern
 
 
 @pytest.fixture
@@ -22,23 +22,23 @@ def link_content():
     """Create a test link according to .md syntax (`anchor + url`)."""
     anchor = "PhD Comics"
     url = "http://phdcomics.com/"
-    return "".join(["(", anchor, ")", "[", url, "]"]), anchor, url
+    return "".join(["[", anchor, "]", "(", url, ")"]), anchor, url
 
 
 def test_url_regex_match(link_content):
-    assert bool(re_link.match(link_content[0])) == True
+    assert bool(link_pattern.match(link_content[0])) == True
 
 
 def test_url_regex_match_group(link_content):
-    assert re_link.match(link_content[0]).group("anchor") == link_content[1]
-    assert re_link.match(link_content[0]).group("url") == link_content[2]
+    assert link_pattern.match(link_content[0]).group("g2") == link_content[1]
+    assert link_pattern.match(link_content[0]).group("g3") == link_content[2]
 
 
 def test_url_regex_match_multiple_urls():
-    """Test that `re_link` is not greedy."""
+    """Test that `link_pattern` is not greedy."""
     content = (
-        "I like (PhD Comics)[http://phdcomics.com/]. My favorite one "
-        "is probably (this)"
-        "[http://phdcomics.com/comics/archive.php?comicid=1296]."
+        "I like [PhD Comics](http://phdcomics.com/). My favorite one "
+        "is probably [this]"
+        "(http://phdcomics.com/comics/archive.php?comicid=1296)."
     )
-    assert len(re_link.findall(content)) == 2
+    assert len(link_pattern.findall(content)) == 2
