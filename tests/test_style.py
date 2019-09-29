@@ -14,31 +14,61 @@
 
 import pytest
 
-from maillinter.style import link_pattern
+from maillinter.style import RE_LINK, getLink
 
 
-@pytest.fixture
-def link_content():
-    """Create a test link according to .md syntax (`anchor + url`)."""
-    anchor = "PhD Comics"
-    url = "http://phdcomics.com/"
-    return "".join(["[", anchor, "]", "(", url, ")"]), anchor, url
+def test_link_regex_match_simple_link():
+    assert bool(RE_LINK.match("<https://www.linux.org/>")) == True
 
 
-def test_url_regex_match(link_content):
-    assert bool(link_pattern.match(link_content[0])) == True
+def test_link_regex_match_annotated_link():
+    assert bool(RE_LINK.match("[Linux](https://www.linux.org/)")) == True
 
 
-def test_url_regex_match_group(link_content):
-    assert link_pattern.match(link_content[0]).group("g2") == link_content[1]
-    assert link_pattern.match(link_content[0]).group("g3") == link_content[2]
+def test_link_regex_match_reference_link():
+    assert bool(RE_LINK.match("[Linux]")) == True
 
 
-def test_url_regex_match_multiple_urls():
-    """Test that `link_pattern` is not greedy."""
+def test_link_regex_match_annotated_reference_link():
+    assert bool(RE_LINK.match("[HHGTTH][42]")) == True
+
+
+def test_link_regex_skip_pure_reference():
+    assert bool(RE_LINK.match("[42]:")) == False
+
+
+def test_link_regex_match_multiple_urls():
     content = (
-        "I like [PhD Comics](http://phdcomics.com/). My favorite one "
-        "is probably [this]"
-        "(http://phdcomics.com/comics/archive.php?comicid=1296)."
+        "Multiple links [Python](https://www.python.org/) and "
+        "<https://www.linux.org/>."
     )
-    assert len(link_pattern.findall(content)) == 2
+    assert len(RE_LINK.findall(content)) == 2
+
+
+def test_link_regex_match_is_not_greedy():
+    content = "Both [Python] and [Linux] take a lot of my time."
+    assert len(RE_LINK.findall(content)) == 2
+
+
+def test_getLink_simple_link():
+    content = "This is a simple link <https://www.python.org/>."
+    match = RE_LINK.search(content)
+    assert getLink(match) == ("", "https://www.python.org/", "")
+
+
+def test_getLink_annotated_link():
+    content = "This is an annotated link [Python](https://www.python.org/)."
+    match = RE_LINK.search(content)
+    assert getLink(match) == ("Python", "https://www.python.org/", "")
+
+
+def test_getLink_reference_link():
+    content = "This is a reference link [Python]."
+    match = RE_LINK.search(content)
+    assert getLink(match) == ("", "", "Python")
+
+
+def test_getLink_annotated_reference_link():
+    content = "This is a simple link [HHGTTH][42]."
+    match = RE_LINK.search(content)
+    assert getLink(match) == ("HHGTTH", "", "42")
