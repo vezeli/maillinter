@@ -16,7 +16,7 @@ import textwrap
 
 from nltk import data
 
-from .constants import DEFAULT_MONOSPACED, DEFAULT_WRAP_LENGTH
+from .constants import DEFAULT_STYLE, DEFAULT_WRAP_LENGTH
 from .style import RE_LINK, getLink
 
 punkt = data.load("tokenizers/punkt/english.pickle")
@@ -46,7 +46,7 @@ class Paragraph:
         Holds contents of a paragraph.
     """
 
-    def __init__(self, content, style="common"):
+    def __init__(self, content, style=DEFAULT_STYLE):
         self.spars = self.make_spars(content)
         self.style = style
 
