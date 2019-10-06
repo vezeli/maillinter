@@ -2,8 +2,8 @@ import textwrap
 
 from nltk import data
 
-from .constants import DEFAULT_MONOSPACED, DEFAULT_WRAP_LENGTH
-from .style import re_link, gen_links
+from .constants import DEFAULT_STYLE, DEFAULT_WRAP_LENGTH
+from .style import RE_LINK, getLink
 
 punkt = data.load("tokenizers/punkt/english.pickle")
 
@@ -32,7 +32,7 @@ class Paragraph:
         Holds contents of a paragraph.
     """
 
-    def __init__(self, content, style="common"):
+    def __init__(self, content, style=DEFAULT_STYLE):
         self.spars = self.make_spars(content)
         self.style = style
 
@@ -71,7 +71,7 @@ class Paragraph:
 
     @property
     def has_links(self):
-        return bool(re_link.search(self.text))
+        return bool(RE_LINK.search(self.text))
 
     def __repr__(self):
         return f"{type(self).__name__}({self.text!r}, {self.style!r})"
@@ -81,22 +81,28 @@ class Paragraph:
 
 
 class Link:
-    def __init__(self, anchor, url):
+    def __init__(self, anchor, url, ref):
         self.anchor = anchor
         self.url = url
+        self.ref = ref
 
     def as_reference(self, value):
-        return "".join(["[", str(value), "]  ", self.url])
+        return "".join(["[", str(value), "]: ", self.url])
 
     def as_standard_text(self, value):
         return "".join([self.anchor, " [", str(value), "]"])
 
     @property
     def raw(self):
-        return "".join(["(", self.anchor, ")", "[", self.url, "]"])
+        return "".join(["[", self.anchor, "]", "(", self.url, ")"])
+
+    @classmethod
+    def from_regex(cls, m):
+        anchor, url, ref = getLink(m)
+        return cls(anchor, url, ref)
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.anchor}, {self.url})"
+        return f"{type(self).__name__}({self.anchor}, {self.url}, {self.ref})"
 
     def __str__(self):
         return self.raw
@@ -120,9 +126,7 @@ class Email:
 
     @property
     def links(self):
-        if any(par.has_links for par in self.paragraphs):
-            return [Link(anchor, url) for anchor, url in gen_links(self.text)]
-        return []
+        return [Link.from_regex(m) for m in RE_LINK.finditer(self.text)]
 
     def substitute_links(self):
         for num, l in enumerate(self.links, 1):
@@ -134,7 +138,10 @@ class Email:
 
     @classmethod
     def from_paragraphs(cls, paragraphs=None):
-        paragraphs = list() if paragraphs is None else list(paragraphs)
+        if paragraphs is None:
+            paragraphs = list()
+        else:
+            paragraphs = list(paragraphs)
         return cls("\n\n".join(par.text for par in paragraphs))
 
     def __len__(self):

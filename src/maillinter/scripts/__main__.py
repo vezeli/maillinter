@@ -8,8 +8,6 @@ from maillinter.scripts import __version__, __sign__
 
 
 def cli():
-    print(__sign__)
-
     with open(args.input_file, "r") as f:
         content = f.read()
 
@@ -27,7 +25,7 @@ def cli():
 
 description_msg = "Lint and restructure e-mail text."
 parser = argparse.ArgumentParser(
-    prog="./" + os.path.basename(__file__), description=description_msg
+    prog="maillinter", description=description_msg
 )
 parser.add_argument("input_file", type=str)
 parser.add_argument(

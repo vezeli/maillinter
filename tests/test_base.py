@@ -74,12 +74,12 @@ def paragraph_content_multiple_links():
     return content
 
 
-def test_default_paragraph_single_subparagraph_text(paragraph_content):
+def test_default_Paragraph_single_subparagraph_text(paragraph_content):
     clean_content = paragraph_content[0]
     assert Paragraph(clean_content).clean_text == clean_content
 
 
-def test_default_paragraph_single_subparagraph_str_repr(paragraph_content):
+def test_default_Paragraph_single_subparagraph_str_repr(paragraph_content):
     clean_content = paragraph_content[0]
     paragraph = Paragraph(clean_content)
     repr_paragraph = f"Paragraph({clean_content!r}, 'common')"
@@ -87,14 +87,14 @@ def test_default_paragraph_single_subparagraph_str_repr(paragraph_content):
     assert "{!r}".format(paragraph) == repr_paragraph
 
 
-def test_default_paragraph_single_subparagraph_clean_text(paragraph_content):
+def test_default_Paragraph_single_subparagraph_clean_text(paragraph_content):
     clean_content = paragraph_content[0]
     dirty_content = paragraph_content[1]
     paragraph = Paragraph(dirty_content)
     assert paragraph.clean_text == clean_content
 
 
-def test_default_paragraph_multiple_subparagraphs_clean_text(
+def test_default_Paragraph_multiple_subparagraphs_clean_text(
     paragraph_content_multiple
 ):
     clean_content = paragraph_content_multiple[0]
@@ -103,14 +103,14 @@ def test_default_paragraph_multiple_subparagraphs_clean_text(
     assert paragraph.clean_text == clean_content
 
 
-def test_default_paragraph_multiple_subparagraphs_wrap_text(paragraph_content_multiple):
+def test_default_Paragraph_multiple_subparagraphs_wrap_text(paragraph_content_multiple):
     dirty_content = paragraph_content_multiple[1]
     wrapped_content = paragraph_content_multiple[2]
     paragraph = Paragraph(dirty_content)
     assert paragraph.wrap_text(width=47) == wrapped_content
 
 
-def test_common_style_paragraph_multiple_subparagraphs_wrap_text(
+def test_common_style_Paragraph_multiple_subparagraphs_wrap_text(
     paragraph_content_multiple
 ):
     dirty_content = paragraph_content_multiple[1]
@@ -119,7 +119,7 @@ def test_common_style_paragraph_multiple_subparagraphs_wrap_text(
     assert paragraph.wrap_text(width=47) == wrapped_content
 
 
-def test_monospaced_style_paragraph_multiple_subparagraphs_wrap_text(
+def test_monospaced_style_Paragraph_multiple_subparagraphs_wrap_text(
     paragraph_content_multiple
 ):
     dirty_content = paragraph_content_multiple[1]
@@ -128,7 +128,7 @@ def test_monospaced_style_paragraph_multiple_subparagraphs_wrap_text(
     assert paragraph.wrap_text(width=47) == double_space_wrapped_content
 
 
-def test_default_paragraph_has_links(
+def test_default_Paragraph_has_links(
     paragraph_content, paragraph_content_multiple_links
 ):
     paragraph_without_links = Paragraph(paragraph_content[0])
