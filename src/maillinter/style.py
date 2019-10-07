@@ -14,7 +14,7 @@ RE_LINK = re.compile(
 )
 
 
-def getLink(m):
+def parse_re_match(m):
     if m.group("g1"):
         anchor, url, ref = ("", m.group("g1"), "")
     elif not m.group("g1"):

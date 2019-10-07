@@ -3,7 +3,7 @@ import textwrap
 from nltk import data
 
 from .constants import DEFAULT_STYLE, DEFAULT_WRAP_LENGTH
-from .style import RE_LINK, getLink
+from .style import RE_LINK, parse_re_match
 
 punkt = data.load("tokenizers/punkt/english.pickle")
 
@@ -33,45 +33,41 @@ class Paragraph:
     """
 
     def __init__(self, content, style=DEFAULT_STYLE):
-        self.spars = self.make_spars(content)
+        self._spars = self._make_spars(content)
         self.style = style
 
     @staticmethod
-    def make_spars(string):
-        return [(n, c) for n, c in enumerate(string.split("\n"))]
+    def _make_spars(string):
+        return [(n, c) for n, c in enumerate(string.splitlines())]
 
     @property
     def text(self):
-        return "\n".join(c for _, c in self.spars)
+        return "\n".join(c for _, c in self._spars)
 
     @text.setter
     def text(self, value):
-        self.spars = self.make_spars(value)
+        self._spars = self._make_spars(value)
 
     @property
     def clean_text(self):
-        cleaned_content = [" ".join(c.split()) for _, c in self.spars]
-        if self.double_space_after_sentence:
+        cleaned_content = [" ".join(c.split()) for _, c in self._spars]
+        if self._double_space_after_sentence():
             cleaned_content = ("  ".join(punkt.tokenize(cl)) for cl in cleaned_content)
         return "\n".join(cleaned_content)
 
-    @property
-    def clean_spars(self):
-        return self.make_spars(self.clean_text)
-
     def wrap_text(self, *args, **kwargs):
         wrapped_content = [
-            textwrap.fill(c, *args, **kwargs) for _, c in self.clean_spars
+            textwrap.fill(c, *args, **kwargs)
+            for _, c in self._make_spars(self.clean_text)
         ]
         return "\n".join(wrapped_content)
 
     @property
-    def double_space_after_sentence(self):
-        return {"monospaced": True, "common": False}[self.style]
-
-    @property
     def has_links(self):
         return bool(RE_LINK.search(self.text))
+
+    def _double_space_after_sentence(self):
+        return {"monospaced": True, "common": False}[self.style]
 
     def __repr__(self):
         return f"{type(self).__name__}({self.text!r}, {self.style!r})"
@@ -81,28 +77,28 @@ class Paragraph:
 
 
 class Link:
-    def __init__(self, anchor, url, ref):
+    def __init__(self, anchor, address, reference):
         self.anchor = anchor
-        self.url = url
-        self.ref = ref
+        self.address = address
+        self.reference = reference
 
     def as_reference(self, value):
-        return "".join(["[", str(value), "]: ", self.url])
+        return "".join(["[", str(value), "]: ", self.address])
 
     def as_standard_text(self, value):
         return "".join([self.anchor, " [", str(value), "]"])
 
     @property
     def raw(self):
-        return "".join(["[", self.anchor, "]", "(", self.url, ")"])
+        return "".join(["[", self.anchor, "]", "(", self.address, ")"])
 
     @classmethod
     def from_regex(cls, m):
-        anchor, url, ref = getLink(m)
-        return cls(anchor, url, ref)
+        anchor, address, reference = parse_re_match(m)
+        return cls(anchor, address, reference)
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.anchor}, {self.url}, {self.ref})"
+        return f"{type(self).__name__}({self.anchor}, {self.address}, {self.reference})"
 
     def __str__(self):
         return self.raw
