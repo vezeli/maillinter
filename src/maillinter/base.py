@@ -1,9 +1,11 @@
+import collections
+import itertools
 import textwrap
 
 from nltk import data
 
-from .constants import DEFAULT_STYLE, DEFAULT_WRAP_LENGTH
-from .style import RE_LINK, parse_re_match
+from . import form
+from .parameters import DEFAULT_STYLE, DEFAULT_WRAP_LENGTH
 
 punkt = data.load("tokenizers/punkt/english.pickle")
 
@@ -64,7 +66,7 @@ class Paragraph:
 
     @property
     def has_links(self):
-        return bool(RE_LINK.search(self.text))
+        return bool(form.RE_LINK.search(self.text))
 
     def _double_space_after_sentence(self):
         return {"monospaced": True, "common": False}[self.style]
@@ -76,32 +78,58 @@ class Paragraph:
         return self.text
 
 
-class Link:
-    def __init__(self, anchor, address, reference):
-        self.anchor = anchor
-        self.address = address
-        self.reference = reference
+"""
+TODO:
+    MultipleParagraphs
+    ==================
+    Two or more Paragraphs can make MultipleParagraphs and more
+    MultipleParagraphs can make more MultipleParagrpahs (__add__ method).
 
-    def as_reference(self, value):
-        return "".join(["[", str(value), "]: ", self.address])
+    superclass for Paragraphs and MultipleParagraphs
+    ================================================
+    So that they can inherite most of the behaviour from the super class.
 
-    def as_standard_text(self, value):
-        return "".join([self.anchor, " [", str(value), "]"])
+    * __len__ is missing
+"""
+
+
+class Link(collections.UserDict):
+    keys = ("anchor", "address", "reference")
+    types = {
+        (False, True, False): "s",
+        (True, True, False): "a",
+        (False, False, True): "r",
+        (True, False, True): "A",
+    }
 
     @property
-    def raw(self):
-        return "".join(["[", self.anchor, "]", "(", self.address, ")"])
+    def type(self):
+        return self.types[self.inspect()]
+
+    def inspect(self):
+        return tuple(bool(value) for value in self.values())
 
     @classmethod
-    def from_regex(cls, m):
-        anchor, address, reference = parse_re_match(m)
-        return cls(anchor, address, reference)
+    def from_iterable(cls, iterable):
+        d = dict(itertools.zip_longest(cls.keys, iterable, fillvalue=None))
+        try:
+            del d[None]
+        except KeyError:
+            if None in d.values():
+                raise Exception
+        return cls(d)
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.anchor}, {self.address}, {self.reference})"
+        return f"{type(self).__name__}({self.data})"
 
     def __str__(self):
-        return self.raw
+        return self.data
+
+
+"""
+TODO:
+    manipulate data inside Link to get text which will go inside Paragraph
+"""
 
 
 class Email:
@@ -122,7 +150,10 @@ class Email:
 
     @property
     def links(self):
-        return [Link.from_regex(m) for m in RE_LINK.finditer(self.text)]
+        gen_metadata = (
+            form.link_metadata(match) for match in form.RE_LINK.finditer(self.text)
+        )
+        return [Link.from_iterable(iterable) for iterable in gen_metadata]
 
     def substitute_links(self):
         for num, l in enumerate(self.links, 1):
