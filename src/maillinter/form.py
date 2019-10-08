@@ -14,7 +14,7 @@ RE_LINK = re.compile(
 )
 
 
-def link_metadata(match):
+def get_metadata(match):
     try:
         groups = match.groups(default="")
     except AttributeError:

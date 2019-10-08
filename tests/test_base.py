@@ -1,6 +1,6 @@
 import pytest
 
-from maillinter.base import Paragraph
+from maillinter.base import Paragraph, Link
 
 
 @pytest.fixture
@@ -135,3 +135,20 @@ def test_default_Paragraph_has_links(
     paragraph_with_links = Paragraph(paragraph_content_multiple_links)
     assert paragraph_without_links.has_links == False
     assert paragraph_with_links.has_links == True
+
+
+@pytest.mark.parametrize(
+    "anchor, address, reference, expected_type",
+    [
+        ("", "https://www.python.org/", "", "s"),
+        ("Python", "https://www.python.org/", "", "a"),
+        ("", "", "Python", "r"),
+        ("HHGTTH", "", "42", "A"),
+    ],
+)
+def test_Link_types(anchor, address, reference, expected_type):
+    d = dict()
+    d["anchor"] = anchor
+    d["address"] = address
+    d["references"] = reference
+    assert Link(d).type == expected_type

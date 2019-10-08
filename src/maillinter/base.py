@@ -1,5 +1,5 @@
 import collections
-import itertools
+import re
 import textwrap
 
 from nltk import data
@@ -107,29 +107,38 @@ class Link(collections.UserDict):
         return self.types[self.inspect()]
 
     def inspect(self):
-        return tuple(bool(value) for value in self.values())
+        return tuple(bool(v) for v in self.values())
+
+    def as_reference(self, value):
+        self["reference"] = value
+        return "".join(["[", str(value), "]: ", self["address"]])
+
+    def as_text(self, value=None):
+        if self.type == "s":
+            return self["anchor"]
+        elif self.type == "a":
+            return "".join([self["anchor"], " [", str(value), "]"])
+        else:
+            pass
+
+    def as_raw(self):
+        if self.type == "s":
+            return "<{}>".format(self["address"])
+        elif self.type == "a":
+            return "[{}]({})".format(self["anchor"], self["address"])
+        else:
+            pass
 
     @classmethod
-    def from_iterable(cls, iterable):
-        d = dict(itertools.zip_longest(cls.keys, iterable, fillvalue=None))
-        try:
-            del d[None]
-        except KeyError:
-            if None in d.values():
-                raise Exception
-        return cls(d)
+    def from_regex_match(cls, match):
+        metadata = form.get_metadata(match)
+        return cls(dict(zip(cls.keys, metadata)))
 
     def __repr__(self):
         return f"{type(self).__name__}({self.data})"
 
     def __str__(self):
         return self.data
-
-
-"""
-TODO:
-    manipulate data inside Link to get text which will go inside Paragraph
-"""
 
 
 class Email:
@@ -150,25 +159,21 @@ class Email:
 
     @property
     def links(self):
-        gen_metadata = (
-            form.link_metadata(match) for match in form.RE_LINK.finditer(self.text)
-        )
-        return [Link.from_iterable(iterable) for iterable in gen_metadata]
+        return [Link.from_regex_match(m) for m in re.finditer(form.RE_LINK, self.text)]
 
     def substitute_links(self):
-        for num, l in enumerate(self.links, 1):
-            self.text = self.text.replace(l.raw, l.as_standard_text(num))
+        num = 0
+        for l in self.links:
+            if l.type == "a":
+                num += 1
+                self.text = self.text.replace(l.as_raw(), l.as_text(num))
 
     def wrap(self, width=DEFAULT_WRAP_LENGTH, *args, **kwargs):
         string = [par.wrap_text(width, *args, **kwargs) for par in self]
         return "\n\n".join(string)
 
     @classmethod
-    def from_paragraphs(cls, paragraphs=None):
-        if paragraphs is None:
-            paragraphs = list()
-        else:
-            paragraphs = list(paragraphs)
+    def from_paragraphs(cls, paragraphs):
         return cls("\n\n".join(par.text for par in paragraphs))
 
     def __len__(self):

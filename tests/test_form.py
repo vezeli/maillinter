@@ -1,6 +1,6 @@
 import pytest
 
-from maillinter.form import RE_LINK, link_metadata
+from maillinter.form import RE_LINK, get_metadata
 
 
 def test_link_regex_match_simple_link():
@@ -39,25 +39,25 @@ def test_link_regex_match_is_not_greedy():
 def test_parse_re_match_simple_link():
     content = "This is a simple link <https://www.python.org/>."
     match = RE_LINK.search(content)
-    assert link_metadata(match) == ("", "https://www.python.org/", "")
+    assert get_metadata(match) == ("", "https://www.python.org/", "")
 
 
 def test_parse_re_match_annotated_link():
     content = "This is an annotated link [Python](https://www.python.org/)."
     match = RE_LINK.search(content)
-    assert link_metadata(match) == ("Python", "https://www.python.org/", "")
+    assert get_metadata(match) == ("Python", "https://www.python.org/", "")
 
 
 def test_parse_re_match_reference_link():
     content = "This is a reference link [Python]."
     match = RE_LINK.search(content)
-    assert link_metadata(match) == ("", "", "Python")
+    assert get_metadata(match) == ("", "", "Python")
 
 
 def test_parse_re_match_annotated_reference_link():
     content = "This is a simple link [HHGTTH][42]."
     match = RE_LINK.search(content)
-    assert link_metadata(match) == ("HHGTTH", "", "42")
+    assert get_metadata(match) == ("HHGTTH", "", "42")
 
 
 # TODO: test that RE works for half nested brackets, e.g., [ [](]) or []([]) and
