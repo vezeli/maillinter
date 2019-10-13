@@ -1,9 +1,11 @@
+import collections
+import re
 import textwrap
 
 from nltk import data
 
-from .constants import DEFAULT_STYLE, DEFAULT_WRAP_LENGTH
-from .style import RE_LINK, getLink
+from . import form
+from .parameters import DEFAULT_STYLE, DEFAULT_WRAP_LENGTH
 
 punkt = data.load("tokenizers/punkt/english.pickle")
 
@@ -33,45 +35,41 @@ class Paragraph:
     """
 
     def __init__(self, content, style=DEFAULT_STYLE):
-        self.spars = self.make_spars(content)
+        self._spars = self._make_spars(content)
         self.style = style
 
     @staticmethod
-    def make_spars(string):
-        return [(n, c) for n, c in enumerate(string.split("\n"))]
+    def _make_spars(string):
+        return [(n, c) for n, c in enumerate(string.splitlines())]
 
     @property
     def text(self):
-        return "\n".join(c for _, c in self.spars)
+        return "\n".join(c for _, c in self._spars)
 
     @text.setter
     def text(self, value):
-        self.spars = self.make_spars(value)
+        self._spars = self._make_spars(value)
 
     @property
     def clean_text(self):
-        cleaned_content = [" ".join(c.split()) for _, c in self.spars]
-        if self.double_space_after_sentence:
+        cleaned_content = [" ".join(c.split()) for _, c in self._spars]
+        if self._double_space_after_sentence():
             cleaned_content = ("  ".join(punkt.tokenize(cl)) for cl in cleaned_content)
         return "\n".join(cleaned_content)
 
-    @property
-    def clean_spars(self):
-        return self.make_spars(self.clean_text)
-
     def wrap_text(self, *args, **kwargs):
         wrapped_content = [
-            textwrap.fill(c, *args, **kwargs) for _, c in self.clean_spars
+            textwrap.fill(c, *args, **kwargs)
+            for _, c in self._make_spars(self.clean_text)
         ]
         return "\n".join(wrapped_content)
 
     @property
-    def double_space_after_sentence(self):
-        return {"monospaced": True, "common": False}[self.style]
-
-    @property
     def has_links(self):
-        return bool(RE_LINK.search(self.text))
+        return bool(form.RE_LINK.search(self.text))
+
+    def _double_space_after_sentence(self):
+        return {"monospaced": True, "common": False}[self.style]
 
     def __repr__(self):
         return f"{type(self).__name__}({self.text!r}, {self.style!r})"
@@ -80,32 +78,67 @@ class Paragraph:
         return self.text
 
 
-class Link:
-    def __init__(self, anchor, url, ref):
-        self.anchor = anchor
-        self.url = url
-        self.ref = ref
+"""
+TODO:
+    MultipleParagraphs
+    ==================
+    Two or more Paragraphs can make MultipleParagraphs and more
+    MultipleParagraphs can make more MultipleParagrpahs (__add__ method).
 
-    def as_reference(self, value):
-        return "".join(["[", str(value), "]: ", self.url])
+    superclass for Paragraphs and MultipleParagraphs
+    ================================================
+    So that they can inherite most of the behaviour from the super class.
 
-    def as_standard_text(self, value):
-        return "".join([self.anchor, " [", str(value), "]"])
+    * __len__ is missing
+"""
+
+
+class Link(collections.UserDict):
+    keys = ("anchor", "address", "reference")
+    types = {
+        (False, True, False): "s",
+        (True, True, False): "a",
+        (False, False, True): "r",
+        (True, False, True): "A",
+    }
 
     @property
-    def raw(self):
-        return "".join(["[", self.anchor, "]", "(", self.url, ")"])
+    def type(self):
+        return self.types[self.inspect()]
+
+    def inspect(self):
+        return tuple(bool(v) for v in self.values())
+
+    def as_reference(self, value):
+        self["reference"] = value
+        return "".join(["[", str(value), "]: ", self["address"]])
+
+    def as_text(self, value=None):
+        if self.type == "s":
+            return self["anchor"]
+        elif self.type == "a":
+            return "".join([self["anchor"], " [", str(value), "]"])
+        else:
+            pass
+
+    def as_raw(self):
+        if self.type == "s":
+            return "<{}>".format(self["address"])
+        elif self.type == "a":
+            return "[{}]({})".format(self["anchor"], self["address"])
+        else:
+            pass
 
     @classmethod
-    def from_regex(cls, m):
-        anchor, url, ref = getLink(m)
-        return cls(anchor, url, ref)
+    def from_regex_match(cls, match):
+        metadata = form.get_metadata(match)
+        return cls(dict(zip(cls.keys, metadata)))
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.anchor}, {self.url}, {self.ref})"
+        return f"{type(self).__name__}({self.data})"
 
     def __str__(self):
-        return self.raw
+        return self.data
 
 
 class Email:
@@ -126,22 +159,21 @@ class Email:
 
     @property
     def links(self):
-        return [Link.from_regex(m) for m in RE_LINK.finditer(self.text)]
+        return [Link.from_regex_match(m) for m in re.finditer(form.RE_LINK, self.text)]
 
     def substitute_links(self):
-        for num, l in enumerate(self.links, 1):
-            self.text = self.text.replace(l.raw, l.as_standard_text(num))
+        num = 0
+        for l in self.links:
+            if l.type == "a":
+                num += 1
+                self.text = self.text.replace(l.as_raw(), l.as_text(num))
 
     def wrap(self, width=DEFAULT_WRAP_LENGTH, *args, **kwargs):
         string = [par.wrap_text(width, *args, **kwargs) for par in self]
         return "\n\n".join(string)
 
     @classmethod
-    def from_paragraphs(cls, paragraphs=None):
-        if paragraphs is None:
-            paragraphs = list()
-        else:
-            paragraphs = list(paragraphs)
+    def from_paragraphs(cls, paragraphs):
         return cls("\n\n".join(par.text for par in paragraphs))
 
     def __len__(self):
